@@ -37,15 +37,42 @@ public class LibraryApplication extends Application {
         peopleCTA.setToggleGroup(menuGroup);
         inventoryCTA.setToggleGroup(menuGroup);
 
-        // By default, set loans to be selected when the app runs
-        loansCTA.setSelected(true);
-
         HBox buttonBox = new HBox(10, loansCTA, peopleCTA, inventoryCTA); // 10 is the spacing between buttons
         buttonBox.setAlignment(Pos.CENTER);
 
         // Combine title and buttons into top portion
         VBox titleBox = new VBox(10, titleBar, buttonBox);
 
+        // Listener to handle toggle button changes
+        VBox contentArea = new VBox(); // This will hold the content for the selected toggle menu button
+        menuGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            contentArea.getChildren().clear();
+            if (newValue == loansCTA) {
+                contentArea.getChildren().add(createLoansContent());
+            } else if (newValue == peopleCTA) {
+                contentArea.getChildren().add(createPeopleContent());
+            } else if (newValue == inventoryCTA) {
+                contentArea.getChildren().add(createInventoryContent());
+            }
+        });
+
+        loansCTA.setSelected(true);
+
+        // Main layout
+        VBox mainLayout = new VBox(10, titleBox, contentArea);
+
+        // Scene
+        Scene scene = new Scene(mainLayout, 1000, 800);
+        primaryStage.setTitle("Library Management");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    private VBox createLoansContent() {
         // Tabs for Standard and Comprehensive
         TabPane tabPane = new TabPane();
         Tab standardTab = new Tab("Standard");
@@ -94,38 +121,27 @@ public class LibraryApplication extends Application {
         // Main content layout
         VBox mainContent = new VBox(10, tabPane, searchBox);
 
-        // Action for People tab
-        peopleCTA.setOnAction(event -> {
-
-            TabPane subTabs = new TabPane();
-            Tab studentsTab = new Tab("Students");
-            Tab authorsTab = new Tab("Authors");
-            Tab producersTab = new Tab("Producers");
-
-            // Content for the Students tab
-            VBox studentsContent = createStudentsContent();
-            studentsTab.setContent(studentsContent);
-
-            // TODO...
-            // authorsTab.setContent(createAuthorsContent());
-            // producersTab.setContent(createProducersContent());
-
-            subTabs.getTabs().addAll(studentsTab, authorsTab, producersTab);
-            mainContent.getChildren().setAll(subTabs);
-        });
-
-        // Main layout
-        VBox mainLayout = new VBox(10, titleBox, buttonBox, mainContent);
-
-        // Scene
-        Scene scene = new Scene(mainLayout, 1000, 800);
-        primaryStage.setTitle("Library Management");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        return mainContent;
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    private VBox createPeopleContent() {
+        TabPane subTabs = new TabPane();
+        Tab studentsTab = new Tab("Students");
+        Tab authorsTab = new Tab("Authors");
+        Tab producersTab = new Tab("Producers");
+
+        // Content for the Students tab
+        VBox studentsContent = createStudentsContent(); // This method should be defined to create the students' content
+        studentsTab.setContent(studentsContent);
+
+        // TODO...
+        // authorsTab.setContent(createAuthorsContent());
+        // producersTab.setContent(createProducersContent());
+
+        subTabs.getTabs().addAll(studentsTab, authorsTab, producersTab);
+
+        VBox peopleContent = new VBox(subTabs); // Wrap the TabPane in a VBox
+        return peopleContent;
     }
 
     private VBox createStudentsContent() {
@@ -136,7 +152,6 @@ public class LibraryApplication extends Application {
         studentManagementBox.setAlignment(Pos.CENTER);
         Insets padding = new Insets(20, 0, 0, 0);
         studentManagementBox.setPadding(padding);
-
 
         // Left side content
         VBox leftSide = new VBox(10);
@@ -226,5 +241,26 @@ public class LibraryApplication extends Application {
         mainStudentsContent.setAlignment(Pos.CENTER);
 
         return mainStudentsContent;
+    }
+
+    private HBox createInventoryContent() {
+        // Dropdown
+        ComboBox<String> inventoryDropdown = new ComboBox<>();
+        inventoryDropdown.getItems().addAll("Item Code", "Author/Director", "Title Keyword", "Desc. Keyword");
+        inventoryDropdown.setValue("Search By:");
+
+        // Search bar
+        TextField searchBar = new TextField();
+        searchBar.setPromptText("Search inventory...");
+
+        // Search button
+        Button searchButton = new Button("Search");
+
+        // Horizontal container for the dropdown, search bar, and search button
+        HBox inventoryContent = new HBox(10, inventoryDropdown, searchBar, searchButton);
+        inventoryContent.setAlignment(Pos.CENTER);
+        inventoryContent.setPadding(new Insets(10));
+
+        return inventoryContent;
     }
 }
