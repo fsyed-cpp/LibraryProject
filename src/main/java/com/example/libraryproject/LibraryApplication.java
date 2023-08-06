@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
@@ -26,7 +27,21 @@ public class LibraryApplication extends Application {
         titleBar.setStyle("-fx-background-color: #e0e0e0;");
 
         // 3 Button Menu
-        HBox buttonBox = getMenuBox();
+
+        ToggleButton loansCTA = new ToggleButton("Loans");
+        ToggleButton peopleCTA = new ToggleButton("People");
+        ToggleButton inventoryCTA = new ToggleButton("Inventory");
+
+        ToggleGroup menuGroup = new ToggleGroup();
+        loansCTA.setToggleGroup(menuGroup);
+        peopleCTA.setToggleGroup(menuGroup);
+        inventoryCTA.setToggleGroup(menuGroup);
+
+        // By default, set loans to be selected when the app runs
+        loansCTA.setSelected(true);
+
+        HBox buttonBox = new HBox(10, loansCTA, peopleCTA, inventoryCTA); // 10 is the spacing between buttons
+        buttonBox.setAlignment(Pos.CENTER);
 
         // Combine title and buttons into top portion
         VBox titleBox = new VBox(10, titleBar, buttonBox);
@@ -37,7 +52,7 @@ public class LibraryApplication extends Application {
         Tab comprehensiveTab = new Tab("Comprehensive");
         tabPane.getTabs().addAll(standardTab, comprehensiveTab);
 
-        // Search bar and button
+        // Search
         TextField searchBar = new TextField();
         searchBar.setPromptText("Search...");
         Button searchButton = new Button("Search");
@@ -73,38 +88,143 @@ public class LibraryApplication extends Application {
             }
         });
 
-        HBox searchBox = new HBox(10, searchBar, searchButton); // 10 is the spacing between elements
+        HBox searchBox = new HBox(10, searchBar, searchButton);
         searchBox.setAlignment(Pos.CENTER);
 
+        // Main content layout
+        VBox mainContent = new VBox(10, tabPane, searchBox);
+
+        // Action for People tab
+        peopleCTA.setOnAction(event -> {
+
+            TabPane subTabs = new TabPane();
+            Tab studentsTab = new Tab("Students");
+            Tab authorsTab = new Tab("Authors");
+            Tab producersTab = new Tab("Producers");
+
+            // Content for the Students tab
+            VBox studentsContent = createStudentsContent();
+            studentsTab.setContent(studentsContent);
+
+            // TODO...
+            // authorsTab.setContent(createAuthorsContent());
+            // producersTab.setContent(createProducersContent());
+
+            subTabs.getTabs().addAll(studentsTab, authorsTab, producersTab);
+            mainContent.getChildren().setAll(subTabs);
+        });
+
         // Main layout
-        VBox mainLayout = new VBox(10, titleBox, buttonBox, tabPane, searchBox); // 10 is the spacing between elements
+        VBox mainLayout = new VBox(10, titleBox, buttonBox, mainContent);
 
         // Scene
-        Scene scene = new Scene(mainLayout, 800, 600);
+        Scene scene = new Scene(mainLayout, 1000, 800);
         primaryStage.setTitle("Library Management");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    private static HBox getMenuBox() {
-        ToggleButton loansCTA = new ToggleButton("Loans");
-        ToggleButton peopleCTA = new ToggleButton("People");
-        ToggleButton inventoryCTA = new ToggleButton("Inventory");
-
-        ToggleGroup menuGroup = new ToggleGroup();
-        loansCTA.setToggleGroup(menuGroup);
-        peopleCTA.setToggleGroup(menuGroup);
-        inventoryCTA.setToggleGroup(menuGroup);
-
-        // By default, set loans to be selected when the app runs
-        loansCTA.setSelected(true);
-
-        HBox buttonBox = new HBox(10, loansCTA, peopleCTA, inventoryCTA); // 10 is the spacing between buttons
-        buttonBox.setAlignment(Pos.CENTER);
-        return buttonBox;
-    }
-
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private VBox createStudentsContent() {
+
+        Label studentManagementLabel = new Label("Student Management");
+        studentManagementLabel.setStyle("-fx-font-size: 20px;");
+        HBox studentManagementBox = new HBox(studentManagementLabel);
+        studentManagementBox.setAlignment(Pos.CENTER);
+        Insets padding = new Insets(20, 0, 0, 0);
+        studentManagementBox.setPadding(padding);
+
+
+        // Left side content
+        VBox leftSide = new VBox(10);
+        leftSide.setPadding(new Insets(10));
+        leftSide.setStyle("-fx-background-color: lightgray;");
+        leftSide.setPrefWidth(400);
+
+        // Student List title
+        Label studentListLabel = new Label("Student List");
+        studentListLabel.setStyle("-fx-font-size: 16px;");
+        HBox studentListTitleBox = new HBox(studentListLabel);
+        studentListTitleBox.setAlignment(Pos.CENTER);
+
+        ComboBox<String> filterDropdown = new ComboBox<>();
+        filterDropdown.getItems().addAll("BroncoID", "Name", "Course");
+        filterDropdown.setValue("Name"); // Set the default value to "Name"
+
+        TextField searchBar = new TextField();
+        Button filterButton = new Button("Filter");
+
+        // Horizontally align dropdown, search bar, and filter button
+        HBox filterBar = new HBox(10, filterDropdown, searchBar, filterButton);
+        filterBar.setAlignment(Pos.CENTER);
+
+        ListView<String> studentList = new ListView<>();
+        // Add sample students to list
+        // TODO: (replace with actual data)
+        studentList.getItems().addAll("Student 1", "Student 2", "Student 3");
+        Button addNewStudentButton = new Button("Add New Student");
+
+        leftSide.getChildren().addAll(studentListTitleBox, filterBar, studentList, addNewStudentButton);
+
+        // Right side content
+        VBox rightSide = new VBox(10);
+        rightSide.setPadding(new Insets(10));
+        rightSide.setStyle("-fx-background-color: lightgray;");
+        rightSide.setPrefWidth(400);
+
+        // Don't show until a student is selected
+        rightSide.setVisible(false);
+
+        // Student  title
+        Label studentTitleLabel = new Label("Student");
+        studentTitleLabel.setStyle("-fx-font-size: 16px;");
+        HBox studentTitleBox = new HBox(studentTitleLabel);
+        studentTitleBox.setAlignment(Pos.CENTER);
+
+        Label firstNameLabel = new Label("First Name");
+        TextField firstNameField = new TextField();
+        Label lastNameLabel = new Label("Last Name");
+        TextField lastNameField = new TextField();
+        Label broncoIdLabel = new Label("Bronco ID");
+        TextField broncoIdField = new TextField();
+
+        Label courseLabel = new Label("Course");
+        ComboBox<String> courseDropdown = new ComboBox<>();
+        courseDropdown.getItems().addAll("BA", "BS", "CS");
+        courseDropdown.setValue("CS"); // Default
+        HBox courseBox = new HBox(10, courseLabel, courseDropdown);
+        courseBox.setAlignment(Pos.CENTER_LEFT);
+
+        Button updateButton = new Button("Update");
+        Button deleteButton = new Button("Delete");
+        updateButton.setMinHeight(45);
+        deleteButton.setMinHeight(30);
+        VBox buttonBox = new VBox(10, updateButton, deleteButton);
+        HBox buttonContainer = new HBox(buttonBox);
+        buttonContainer.setAlignment(Pos.CENTER_RIGHT);
+        buttonContainer.setPadding(new Insets(20, 0 ,0, 0));
+
+        rightSide.getChildren().addAll(studentTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+                broncoIdLabel, broncoIdField, courseBox, buttonContainer);
+
+        // Add a listener to the student list to show the right side when a student is selected
+        studentList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                rightSide.setVisible(true);
+                // Populate fields based on the selected student here
+            }
+        });
+
+        // Main People content
+        HBox studentsContent = new HBox(30, leftSide, rightSide); // 10 is the spacing between elements
+        studentsContent.setAlignment(Pos.CENTER);
+
+        VBox mainStudentsContent = new VBox(10, studentManagementBox, studentsContent);
+        mainStudentsContent.setAlignment(Pos.CENTER);
+
+        return mainStudentsContent;
     }
 }
