@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -41,7 +42,7 @@ public class LibraryApplication extends Application {
         peopleCTA.setToggleGroup(menuGroup);
         inventoryCTA.setToggleGroup(menuGroup);
 
-        HBox buttonBox = new HBox(10, loansCTA, peopleCTA, inventoryCTA); // 10 is the spacing between buttons
+        HBox buttonBox = new HBox(10, loansCTA, peopleCTA, inventoryCTA);
         buttonBox.setAlignment(Pos.CENTER);
 
         // Combine title and buttons into top portion
@@ -332,9 +333,135 @@ public class LibraryApplication extends Application {
 
         // HBox for the entire lower part
         HBox lowerHBox = new HBox(10, leftVBox, newItemButton);
-       // lowerHBox.setAlignment(Pos.CENTER);
 
         leftSide.getChildren().setAll(inventoryTitleBox, table, lowerHBox);
+
+        // RIGHT SIDE !!
+
+        Label buttonTitleLabel = new Label("Book");
+        HBox buttonTitleBox = new HBox((buttonTitleLabel));
+        buttonTitleBox.setAlignment(Pos.CENTER);
+        buttonTitleLabel.setAlignment(Pos.CENTER);
+        buttonTitleLabel.setFont(new Font("Arial", 20));
+
+        // Create a GridPane for the fields
+        GridPane fieldsGrid = new GridPane();
+        fieldsGrid.setHgap(5);
+        fieldsGrid.setVgap(10);
+
+        // Code field
+        TextField codeField = new TextField();
+        fieldsGrid.addRow(0, new Label("Code"), codeField);
+
+        // Title field
+        TextField titleField = new TextField();
+        fieldsGrid.addRow(1, new Label("Title"), titleField);
+
+        // Location field
+        TextField locationField = new TextField();
+        fieldsGrid.addRow(2, new Label("Location"), locationField);
+
+        // Price/D field with dropdown
+        ComboBox<String> priceDropdown = new ComboBox<>();
+        priceDropdown.setValue("$1.20");
+        // You can add items to the dropdown here
+        fieldsGrid.addRow(3, new Label("Price/D"), priceDropdown);
+
+        // Left VBox containing the fields
+        VBox rightSideLeftVBox = new VBox(fieldsGrid);
+
+        // Authors list
+        ListView<String> authorsList = new ListView<>();
+        authorsList.setPrefHeight(100);
+        // add authors here...
+
+        // + and - buttons
+        Button addButton = new Button("+");
+        Button removeButton = new Button("-");
+        // HBox for + and - buttons
+        HBox authorButtonsHBox = new HBox(5, addButton, removeButton);
+        authorButtonsHBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // VBox for authors list and buttons
+        VBox authorsVBox = new VBox(5, new Label("Authors"), authorsList, authorButtonsHBox);
+        authorsVBox.setPadding(new Insets(-5));
+
+        // GridPane containing left and right sections
+        GridPane mainGrid = new GridPane();
+        mainGrid.add(rightSideLeftVBox, 0, 0);
+        mainGrid.add(authorsVBox, 1, 0);
+        mainGrid.setHgap(110);
+
+        // Create The Book Info section
+        Label pagesLabel = new Label("Pages");
+        TextField pagesTextField = new TextField();
+        pagesTextField.setPrefWidth(100);
+
+        Label pubDateLabel = new Label("Pub Date");
+        DatePicker pubDateField = new DatePicker();
+        pubDateField.setPrefWidth(120);
+
+        Label publisherLabel = new Label("Publisher");
+        TextField publisherTextField = new TextField();
+
+        HBox firstHBox = new HBox(10, pagesLabel, pagesTextField, pubDateLabel, pubDateField, publisherLabel, publisherTextField);
+        firstHBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Second HBox
+        Label descriptionLabel = new Label("Description");
+        TextField descriptionTextField = new TextField();
+        descriptionTextField.setMaxWidth(Double.MAX_VALUE);
+
+        HBox secondHBox = new HBox(10, descriptionLabel, descriptionTextField);
+        secondHBox.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(descriptionTextField, Priority.ALWAYS);
+
+        // Main VBox
+        VBox additionalBookInfo = new VBox(10, firstHBox, secondHBox);
+        additionalBookInfo.setPadding(new Insets(50, 0, 0 ,0));
+
+        // Copies
+        Label copiesLabel = new Label("Copies");
+        ComboBox<String> copiesDropdown = new ComboBox<>();
+        copiesDropdown.getItems().addAll("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
+        copiesDropdown.setValue("3");
+        VBox copies = new VBox(10, copiesLabel, copiesDropdown);
+
+        // Borrowed / Overdue
+        // TODO: Insert actual borrowed/overdue items from DB
+        HBox borrowedBox = new HBox(10, new Label("Borrowed"), new Label("3"));
+        HBox overdueBox = new HBox(10, new Label("Overdue"), new Label("  2"));
+        VBox borrowedOverdueBox = new VBox(15, borrowedBox, overdueBox);
+
+        // Waitlisted
+        Label waitListedLabel = new Label("Waitlisted");
+        ToggleButton yesButton = new ToggleButton("Yes");
+        ToggleButton noButton = new ToggleButton("No");
+        ToggleGroup waitlistedGroup = new ToggleGroup();
+        yesButton.setToggleGroup(waitlistedGroup);
+        noButton.setToggleGroup(waitlistedGroup);
+        HBox waitlistedButtonBox = new HBox(0, yesButton, noButton);
+        VBox waitlistedBox = new VBox(10.0, waitListedLabel, waitlistedButtonBox);
+
+        // Combine copies, borrowed/overdue, and waitlisted into hbox
+        HBox detailedBookInfo = new HBox(20, copies, borrowedOverdueBox, waitlistedBox);
+        detailedBookInfo.setPadding(new Insets(50, 0, 0 ,0));
+
+        // Update/Delete Buttons
+        Button updateButton = new Button("Update");
+        updateButton.setPrefWidth(150);
+        updateButton.setPrefHeight(80);
+
+        Button deleteButton = new Button("Delete");
+        deleteButton.setPrefWidth(70);
+        deleteButton.setPrefHeight(80);
+
+        HBox updateDelBox = new HBox(10, updateButton, deleteButton);
+        updateDelBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // Main VBox containing the title and the main HBox
+        VBox mainRightContent = new VBox(10, buttonTitleBox, mainGrid, additionalBookInfo, detailedBookInfo, updateDelBox);
+        rightSide.getChildren().setAll(mainRightContent);
 
         // Main content layout (with equal widths for left and right sides)
         HBox mainContent = new HBox(leftSide, rightSide);
