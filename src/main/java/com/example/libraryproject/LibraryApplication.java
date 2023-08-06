@@ -1,11 +1,16 @@
 package com.example.libraryproject;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
@@ -27,7 +32,6 @@ public class LibraryApplication extends Application {
         titleBar.setStyle("-fx-background-color: #e0e0e0;");
 
         // 3 Button Menu
-
         ToggleButton loansCTA = new ToggleButton("Loans");
         ToggleButton peopleCTA = new ToggleButton("People");
         ToggleButton inventoryCTA = new ToggleButton("Inventory");
@@ -131,7 +135,7 @@ public class LibraryApplication extends Application {
         Tab producersTab = new Tab("Producers");
 
         // Content for the Students tab
-        VBox studentsContent = createStudentsContent(); // This method should be defined to create the students' content
+        VBox studentsContent = createStudentsContent();
         studentsTab.setContent(studentsContent);
 
         // TODO...
@@ -234,7 +238,7 @@ public class LibraryApplication extends Application {
         });
 
         // Main People content
-        HBox studentsContent = new HBox(30, leftSide, rightSide); // 10 is the spacing between elements
+        HBox studentsContent = new HBox(30, leftSide, rightSide);
         studentsContent.setAlignment(Pos.CENTER);
 
         VBox mainStudentsContent = new VBox(10, studentManagementBox, studentsContent);
@@ -243,7 +247,7 @@ public class LibraryApplication extends Application {
         return mainStudentsContent;
     }
 
-    private HBox createInventoryContent() {
+    private VBox createInventoryContent() {
         // Dropdown
         ComboBox<String> inventoryDropdown = new ComboBox<>();
         inventoryDropdown.getItems().addAll("Item Code", "Author/Director", "Title Keyword", "Desc. Keyword");
@@ -251,16 +255,109 @@ public class LibraryApplication extends Application {
 
         // Search bar
         TextField searchBar = new TextField();
-        searchBar.setPromptText("Search inventory...");
+        searchBar.setPromptText("Enter Value");
 
         // Search button
         Button searchButton = new Button("Search");
+        // Search functionality
+        searchButton.setOnAction(event -> {
+            String searchText = searchBar.getText();
+            // Add search logic here
+        });
 
-        // Horizontal container for the dropdown, search bar, and search button
-        HBox inventoryContent = new HBox(10, inventoryDropdown, searchBar, searchButton);
-        inventoryContent.setAlignment(Pos.CENTER);
-        inventoryContent.setPadding(new Insets(10));
+        // Aligning the dropdown, search bar, and search button horizontally
+        HBox searchArea = new HBox(10, inventoryDropdown, searchBar, searchButton);
+        searchArea.setAlignment(Pos.CENTER);
 
-        return inventoryContent;
+        // Left Side
+        VBox leftSide = new VBox();
+        leftSide.setPadding(new Insets(10));
+        leftSide.setSpacing(10);
+        leftSide.setStyle("-fx-background-color: lightgray;");
+        leftSide.setPrefWidth(300);
+
+        // Right Side
+        VBox rightSide = new VBox();
+        rightSide.setPadding(new Insets(10));
+        rightSide.setSpacing(10);
+        rightSide.setStyle("-fx-background-color: lightgray;");
+        rightSide.setPrefWidth(600);
+
+        // Title "Inventory"
+        Label titleLabel = new Label("Inventory");
+        HBox inventoryTitleBox = new HBox((titleLabel));
+        inventoryTitleBox.setAlignment(Pos.CENTER);
+        titleLabel.setAlignment(Pos.CENTER);
+        titleLabel.setFont(new Font("Arial", 20)); // Set the font size
+
+        // Table for Code and Title
+        TableView<InventoryItem> table = new TableView<>();
+        TableColumn<InventoryItem, String> codeColumn = new TableColumn<>("Code");
+        codeColumn.setCellValueFactory(new PropertyValueFactory<>("code"));
+        TableColumn<InventoryItem, String> titleColumn = new TableColumn<>("Title");
+        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+
+        table.getColumns().setAll(codeColumn, titleColumn);
+
+        // Set the columns to take up equal space
+        codeColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
+        titleColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
+
+        // Dummy data
+        ObservableList<InventoryItem> data = FXCollections.observableArrayList(
+                new InventoryItem("C123", "Item 1"),
+                new InventoryItem("C456", "Item 2"),
+                new InventoryItem("C789", "Item 3")
+        );
+
+        // Setting the dummy data to the table
+        table.setItems(data);
+
+        // Check boxes with labels
+        CheckBox bookCheckBox = new CheckBox("Book");
+        CheckBox documentaryCheckBox = new CheckBox("Documentary");
+        CheckBox availableCheckBox = new CheckBox("Available");
+
+        // VBox for the left side with the checkboxes
+        VBox leftVBox = new VBox(5, bookCheckBox, documentaryCheckBox, availableCheckBox);
+        leftVBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Define a specific width for the left VBox
+        leftVBox.setPrefWidth(150);
+
+        // Button for the right side
+        Button newItemButton = new Button("New Item");
+        newItemButton.setPrefHeight(50);
+        newItemButton.setPrefWidth(90);
+
+        // HBox for the entire lower part
+        HBox lowerHBox = new HBox(10, leftVBox, newItemButton);
+       // lowerHBox.setAlignment(Pos.CENTER);
+
+        leftSide.getChildren().setAll(inventoryTitleBox, table, lowerHBox);
+
+        // Main content layout (with equal widths for left and right sides)
+        HBox mainContent = new HBox(leftSide, rightSide);
+        mainContent.setSpacing(20); // Spacing between left and right sides
+        mainContent.setPadding(new Insets(25));
+
+        // Combining the search area with the main content
+        VBox fullContent = new VBox(10, searchArea, mainContent);
+        fullContent.setPadding(new Insets(20));
+
+        return fullContent;
+    }
+
+    public static class InventoryItem {
+        private final SimpleStringProperty code;
+        private final SimpleStringProperty title;
+
+        public InventoryItem(String code, String title) {
+            this.code = new SimpleStringProperty(code);
+            this.title = new SimpleStringProperty(title);
+        }
+
+        public String getCode() { return code.get(); }
+        public String getTitle() { return title.get(); }
     }
 }
