@@ -137,11 +137,13 @@ public class LibraryApplication extends Application {
 
         // Content for the Students tab
         VBox studentsContent = createStudentsContent();
-        studentsTab.setContent(studentsContent);
+        VBox authorsContent = createAuthorsContent();
+        VBox producersContent = createStudentsContent();
 
-        // TODO...
-        // authorsTab.setContent(createAuthorsContent());
-        // producersTab.setContent(createProducersContent());
+        studentsTab.setContent(studentsContent);
+        authorsTab.setContent(authorsContent);
+        producersTab.setContent(producersContent);
+
 
         subTabs.getTabs().addAll(studentsTab, authorsTab, producersTab);
 
@@ -243,6 +245,100 @@ public class LibraryApplication extends Application {
         studentsContent.setAlignment(Pos.CENTER);
 
         VBox mainStudentsContent = new VBox(10, studentManagementBox, studentsContent);
+        mainStudentsContent.setAlignment(Pos.CENTER);
+
+        return mainStudentsContent;
+    }
+
+    private VBox createAuthorsContent() {
+
+        Label authorManagementLabel = new Label("Author Management");
+        authorManagementLabel.setStyle("-fx-font-size: 20px;");
+        HBox authorManagementBox = new HBox(authorManagementLabel);
+        authorManagementBox.setAlignment(Pos.CENTER);
+        Insets padding = new Insets(20, 0, 0, 0);
+        authorManagementBox.setPadding(padding);
+
+        // Left side content
+        VBox leftSide = new VBox(10);
+        leftSide.setPadding(new Insets(10));
+        leftSide.setStyle("-fx-background-color: lightgray;");
+        leftSide.setPrefWidth(400);
+
+        // Student List title
+        Label authorListLabel = new Label("Author List");
+        authorListLabel.setStyle("-fx-font-size: 16px;");
+        HBox authorListTitleBox = new HBox(authorListLabel);
+        authorListTitleBox.setAlignment(Pos.CENTER);
+
+        ComboBox<String> filterDropdown = new ComboBox<>();
+        filterDropdown.getItems().addAll("Name", "Item ID");
+        filterDropdown.setValue("Filter by:"); // Set the default value to "Name"
+
+        TextField searchBar = new TextField();
+        Button filterButton = new Button("Filter");
+
+        // Horizontally align dropdown, search bar, and filter button
+        HBox filterBar = new HBox(10, filterDropdown, searchBar, filterButton);
+        filterBar.setAlignment(Pos.CENTER);
+
+        ListView<String> authorList = new ListView<>();
+        // Add sample authors to list
+        // TODO: (replace with actual data)
+        authorList.getItems().addAll("Ernest Hemingway");
+        Button addNewAuthorButton = new Button("Add New Author");
+
+        leftSide.getChildren().addAll(authorListTitleBox, filterBar, authorList, addNewAuthorButton);
+
+        // Right side content
+        VBox rightSide = new VBox(10);
+        rightSide.setPadding(new Insets(10));
+        rightSide.setStyle("-fx-background-color: lightgray;");
+        rightSide.setPrefWidth(400);
+
+        // Don't show until a student is selected
+        rightSide.setVisible(false);
+
+        // Student  title
+        Label studentTitleLabel = new Label("Author");
+        studentTitleLabel.setStyle("-fx-font-size: 16px;");
+        HBox studentTitleBox = new HBox(studentTitleLabel);
+        studentTitleBox.setAlignment(Pos.CENTER);
+
+        Label firstNameLabel = new Label("First Name");
+        TextField firstNameField = new TextField();
+        Label lastNameLabel = new Label("Last Name");
+        TextField lastNameField = new TextField();
+        Label nationalityLabel = new Label("Nationality");
+        TextField nationalityField = new TextField();
+        Label subjectLabel = new Label("Subject");
+        TextField subjectField = new TextField();
+
+        Button updateButton = new Button("Update");
+        Button deleteButton = new Button("Delete");
+        updateButton.setMinHeight(45);
+        deleteButton.setMinHeight(30);
+        VBox buttonBox = new VBox(10, updateButton, deleteButton);
+        HBox buttonContainer = new HBox(buttonBox);
+        buttonContainer.setAlignment(Pos.CENTER_RIGHT);
+        buttonContainer.setPadding(new Insets(20, 0 ,0, 0));
+
+        rightSide.getChildren().addAll(studentTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+                nationalityLabel, nationalityField, subjectLabel, subjectField, buttonContainer);
+
+        // Add a listener to the student list to show the right side when a student is selected
+        authorList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                rightSide.setVisible(true);
+                // Populate fields based on the selected student here
+            }
+        });
+
+        // Main People content
+        HBox studentsContent = new HBox(30, leftSide, rightSide);
+        studentsContent.setAlignment(Pos.CENTER);
+
+        VBox mainStudentsContent = new VBox(10, authorManagementBox, studentsContent);
         mainStudentsContent.setAlignment(Pos.CENTER);
 
         return mainStudentsContent;
