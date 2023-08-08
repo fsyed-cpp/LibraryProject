@@ -21,6 +21,8 @@ import java.io.IOException;
 
 public class LibraryApplication extends Application {
 
+    private Boolean isLoanDetailAdded = false;
+
     @Override
     public void start(Stage primaryStage) {
 
@@ -83,18 +85,39 @@ public class LibraryApplication extends Application {
         TabPane tabPane = new TabPane();
         Tab standardTab = new Tab("Standard");
         Tab comprehensiveTab = new Tab("Comprehensive");
-        tabPane.getTabs().addAll(standardTab, comprehensiveTab);
 
-        // Search
+        // Search Filter
+        ComboBox<String> searchFilterDropDown = new ComboBox<>();
+        searchFilterDropDown.getItems().addAll("Loan #", "Bronco ID", "Item Code");
+        searchFilterDropDown.setValue("Search By:"); // Default
+
+        // Standard Search
         TextField searchBar = new TextField();
         searchBar.setPromptText("Bronco ID");
         Button searchButton = new Button("Search");
 
+        // Comprehensive Search
+        TextField comprehensiveSearchBar = new TextField();
+        searchBar.setPromptText("Bronco ID");
+        Button comprehensiveSearchButton = new Button("Search");
+
+        // Generate Reports Button
+        Button generateReportsButton = new Button("Generate Financial Report");
+        HBox reportButtonBox = new HBox(generateReportsButton);
+        reportButtonBox.setAlignment(Pos.CENTER_RIGHT);
+        reportButtonBox.setPrefWidth(200);
+
         HBox searchBox = new HBox(10, searchBar, searchButton);
+        HBox comprehensiveSearchBox = new HBox(10, searchFilterDropDown, comprehensiveSearchBar, comprehensiveSearchButton, reportButtonBox);
         searchBox.setAlignment(Pos.CENTER);
+        comprehensiveSearchBox.setAlignment(Pos.CENTER);
 
         // Main content layout
-        VBox mainContent = new VBox(10, tabPane, searchBox);
+        VBox standardMainContent = new VBox(10, searchBox);
+        standardMainContent.setPadding(new Insets(25, 0, 0, 0));
+
+        VBox comprehensiveMainContent = new VBox(10, comprehensiveSearchBox);
+        comprehensiveMainContent.setPadding(new Insets(25, 0, 0,0 ));
 
         // Search button functionality:
         searchButton.setOnAction(event -> {
@@ -128,13 +151,24 @@ public class LibraryApplication extends Application {
                 alert.setContentText("Please check to make sure the ID is correct");
                 alert.showAndWait();
             } else {
-                // Show loan content
+                // Show loan content for the standard tab
                 VBox loanDetailContent = createLoanDetailContent();
-                mainContent.getChildren().add(loanDetailContent);
+                if (!isLoanDetailAdded) {
+                    standardMainContent.getChildren().add(loanDetailContent);
+                    standardTab.setContent(standardMainContent);
+                    tabPane.getTabs().addAll(standardTab);
+                    isLoanDetailAdded = true;
+                }
             }
         });
 
-        return mainContent;
+        standardTab.setContent(standardMainContent);
+        comprehensiveTab.setContent(comprehensiveMainContent);
+        tabPane.getTabs().addAll(standardTab, comprehensiveTab);
+
+        VBox loansContent = new VBox(tabPane);
+
+        return loansContent;
     }
 
     private VBox createLoanDetailContent() {
@@ -454,7 +488,6 @@ public class LibraryApplication extends Application {
         studentsTab.setContent(studentsContent);
         authorsTab.setContent(authorsContent);
         producersTab.setContent(producersContent);
-
 
         subTabs.getTabs().addAll(studentsTab, authorsTab, producersTab);
 
