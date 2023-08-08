@@ -299,11 +299,11 @@ public class LibraryApplication extends Application {
         // Don't show until a student is selected
         rightSide.setVisible(false);
 
-        // Student  title
-        Label studentTitleLabel = new Label("Author");
-        studentTitleLabel.setStyle("-fx-font-size: 16px;");
-        HBox studentTitleBox = new HBox(studentTitleLabel);
-        studentTitleBox.setAlignment(Pos.CENTER);
+        // Author  title
+        Label authorTitleLabel = new Label("Author");
+        authorTitleLabel.setStyle("-fx-font-size: 16px;");
+        HBox authorTitleBox = new HBox(authorTitleLabel);
+        authorTitleBox.setAlignment(Pos.CENTER);
 
         Label firstNameLabel = new Label("First Name");
         TextField firstNameField = new TextField();
@@ -323,15 +323,27 @@ public class LibraryApplication extends Application {
         buttonContainer.setAlignment(Pos.CENTER_RIGHT);
         buttonContainer.setPadding(new Insets(20, 0 ,0, 0));
 
-        rightSide.getChildren().addAll(studentTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+        rightSide.getChildren().addAll(authorTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
                 nationalityLabel, nationalityField, subjectLabel, subjectField, buttonContainer);
 
         // Add a listener to the student list to show the right side when a student is selected
         authorList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 rightSide.setVisible(true);
+                rightSide.getChildren().clear();
+                rightSide.getChildren().addAll(authorTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+                        nationalityLabel, nationalityField, subjectLabel, subjectField, buttonContainer);
                 // Populate fields based on the selected student here
             }
+        });
+
+        // Add new author should clear right side if it's shown and show add author UI
+        addNewAuthorButton.setOnAction(event -> {
+            authorList.getSelectionModel().clearSelection();
+            rightSide.setVisible(true);
+            rightSide.getChildren().clear();
+            VBox addAuthorRightSide = createAddAuthorRightSideContent();
+            rightSide.getChildren().setAll(addAuthorRightSide);
         });
 
         // Main People content
@@ -344,7 +356,48 @@ public class LibraryApplication extends Application {
         return mainStudentsContent;
     }
 
+    private VBox createAddAuthorRightSideContent() {
+
+        // Right side content
+        VBox rightSide = new VBox(10);
+        rightSide.setPadding(new Insets(10));
+        rightSide.setStyle("-fx-background-color: lightgray;");
+        rightSide.setPrefWidth(400);
+
+        // Author  title
+        Label authorTitleLabel = new Label("Add Author");
+        authorTitleLabel.setStyle("-fx-font-size: 16px;");
+        HBox authorTitleBox = new HBox(authorTitleLabel);
+        authorTitleBox.setAlignment(Pos.CENTER);
+
+        Label firstNameLabel = new Label("First Name");
+        TextField firstNameField = new TextField();
+        Label lastNameLabel = new Label("Last Name");
+        TextField lastNameField = new TextField();
+        Label nationalityLabel = new Label("Nationality");
+        TextField nationalityField = new TextField();
+        Label subjectLabel = new Label("Subject");
+        TextField subjectField = new TextField();
+
+        Button addButton = new Button("Add");
+        Button deleteButton = new Button("Cancel");
+        addButton.setMinHeight(45);
+        addButton.setPrefWidth(90);
+        deleteButton.setMinHeight(30);
+        deleteButton.setPrefWidth(90);
+        VBox buttonBox = new VBox(10, addButton, deleteButton);
+        HBox buttonContainer = new HBox(buttonBox);
+        buttonContainer.setAlignment(Pos.CENTER_RIGHT);
+        buttonContainer.setPadding(new Insets(20, 0 ,0, 0));
+
+        rightSide.getChildren().addAll(authorTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+                nationalityLabel, nationalityField, subjectLabel, subjectField, buttonContainer);
+
+        return rightSide;
+    }
+
     private VBox createInventoryContent() {
+
         // Dropdown
         ComboBox<String> inventoryDropdown = new ComboBox<>();
         inventoryDropdown.getItems().addAll("Item Code", "Author/Director", "Title Keyword", "Desc. Keyword");
