@@ -56,6 +56,8 @@ public class LibraryApplication extends Application {
         VBox contentArea = new VBox(); // This will hold the content for the selected toggle menu button
         menuGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             contentArea.getChildren().clear();
+            isLoanDetailAdded = false;
+            isComprehensiveLoanDetailAdded = false;
             if (newValue == loansCTA) {
                 contentArea.getChildren().add(createLoansContent());
             } else if (newValue == peopleCTA) {
