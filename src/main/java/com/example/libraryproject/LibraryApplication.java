@@ -151,6 +151,7 @@ public class LibraryApplication extends Application {
         rightSide.setSpacing(10);
         rightSide.setStyle("-fx-background-color: lightgray;");
         rightSide.setPrefWidth(600);
+        rightSide.setVisible(false);
 
         // Title "<Person Name?"
         Label titleLabel = new Label("John Smith"); // TODO: Change to actual name
@@ -181,11 +182,28 @@ public class LibraryApplication extends Application {
         // Setting the dummy data to the table
         table.setItems(data);
 
+        table.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    if (newValue != null) {
+                        // show loan info
+                        rightSide.getChildren().clear();
+                        rightSide.setVisible(true);
+                        rightSide.getChildren().setAll(createLoanInformationContent());
+                    }
+                }
+        );
+
         // Button to add new loan
         Button addNewLoanButton = new Button("New Loan");
         addNewLoanButton.prefWidth(150);
         addNewLoanButton.prefHeight(80);
         addNewLoanButton.setAlignment(Pos.CENTER);
+
+        addNewLoanButton.setOnAction(event -> {
+            table.getSelectionModel().clearSelection();
+            rightSide.getChildren().clear();
+            rightSide.getChildren().setAll(createNewLoanDetailContent());
+        });
 
         VBox buttonBox = new VBox(5, addNewLoanButton);
         buttonBox.setAlignment(Pos.CENTER);
@@ -195,6 +213,20 @@ public class LibraryApplication extends Application {
         leftSide.getChildren().setAll(loanTitleBox, table, buttonBox);
 
         // RIGHT SIDE !!
+        rightSide.getChildren().setAll(createLoanInformationContent());
+
+        // Main content layout (with equal widths for left and right sides)
+        HBox mainContent = new HBox(leftSide, rightSide);
+        mainContent.setSpacing(20); // Spacing between left and right sides
+        mainContent.setPadding(new Insets(25));
+
+        // Combining the search area with the main content
+        VBox fullContent = new VBox(10, mainContent);
+
+        return fullContent;
+    }
+
+    private VBox createLoanInformationContent() {
 
         Label loanTitleLabel = new Label("Loan Information");
         HBox loanInfoTitleBox = new HBox((loanTitleLabel));
@@ -254,7 +286,6 @@ public class LibraryApplication extends Application {
 
         VBox rightSideRightVBox = new VBox(rightFieldsGrid);
 
-
         // GridPane containing left and right sections
         GridPane mainGrid = new GridPane();
         mainGrid.add(rightSideLeftVBox, 0, 0);
@@ -300,17 +331,113 @@ public class LibraryApplication extends Application {
         // Main VBox containing the title and the main HBox
         mainGrid.setPadding(new Insets(20, 0 ,0 ,0));
         VBox mainRightContent = new VBox(10, loanInfoTitleBox, mainGrid, waitlistedOverdueBox, updateDelBox);
-        rightSide.getChildren().setAll(mainRightContent);
 
-        // Main content layout (with equal widths for left and right sides)
-        HBox mainContent = new HBox(leftSide, rightSide);
-        mainContent.setSpacing(20); // Spacing between left and right sides
-        mainContent.setPadding(new Insets(25));
+        return mainRightContent;
+    }
 
-        // Combining the search area with the main content
-        VBox fullContent = new VBox(10, mainContent);
+    private VBox createNewLoanDetailContent() {
 
-        return fullContent;
+        Label loanTitleLabel = new Label("Create Loan");
+        HBox loanInfoTitleBox = new HBox((loanTitleLabel));
+        loanInfoTitleBox.setAlignment(Pos.CENTER);
+        loanTitleLabel.setAlignment(Pos.CENTER);
+        loanTitleLabel.setFont(new Font("Arial", 20));
+
+        // Create a GridPane for the fields
+        GridPane fieldsGrid = new GridPane();
+        fieldsGrid.setHgap(5);
+        fieldsGrid.setVgap(10);
+
+        // Code field
+        TextField codeField = new TextField();
+        fieldsGrid.addRow(0, new Label("Code"), codeField);
+
+        // Title field
+        TextField titleField = new TextField();
+        fieldsGrid.addRow(1, new Label("Title"), titleField);
+
+        // Requested Days with dropdown
+        ComboBox<String> reqDaysDropdown = new ComboBox<>();
+        reqDaysDropdown.setValue("10");
+        fieldsGrid.addRow(2, new Label("Requested Days"), reqDaysDropdown);
+
+        // Loan Date field
+        DatePicker loanDateField = new DatePicker();
+        fieldsGrid.addRow(3, new Label("Loan Date"), loanDateField);
+
+        // Due Date field
+        DatePicker dueDateField = new DatePicker();
+        fieldsGrid.addRow(4, new Label("Due Date"), dueDateField);
+
+        // Left VBox containing the fields
+        VBox rightSideLeftVBox = new VBox(fieldsGrid);
+
+        // rightSideRight VBox
+        GridPane rightFieldsGrid = new GridPane();
+        rightFieldsGrid.setHgap(5);
+        rightFieldsGrid.setVgap(10);
+
+        // Daily Price field
+        TextField dailyPriceField = new TextField();
+        rightFieldsGrid.addRow(0, new Label("Due Date"), dailyPriceField);
+
+        // Accrued field
+        TextField accruedField = new TextField();
+        rightFieldsGrid.addRow(1, new Label("Accrued"), accruedField);
+
+        // Fines field
+        TextField finesField = new TextField();
+        rightFieldsGrid.addRow(2, new Label("Fines"), finesField);
+
+        // Total Due field
+        TextField totalDueField = new TextField();
+        rightFieldsGrid.addRow(3, new Label("Total Due"), totalDueField);
+
+        VBox rightSideRightVBox = new VBox(rightFieldsGrid);
+
+        // GridPane containing left and right sections
+        GridPane mainGrid = new GridPane();
+        mainGrid.add(rightSideLeftVBox, 0, 0);
+        mainGrid.add(rightSideRightVBox, 1, 0);
+        mainGrid.setHgap(80);
+
+        // Waitlisted
+        Label waitListedLabel = new Label("Waitlisted");
+        ToggleButton yesButton = new ToggleButton("Yes");
+        ToggleButton noButton = new ToggleButton("No");
+        ToggleGroup waitlistedGroup = new ToggleGroup();
+        yesButton.setToggleGroup(waitlistedGroup);
+        noButton.setToggleGroup(waitlistedGroup);
+        HBox waitlistedButtonBox = new HBox(0, yesButton, noButton);
+        VBox waitlistedBox = new VBox(10.0, waitListedLabel, waitlistedButtonBox);
+
+        // Overdue
+        Label overdueLabel = new Label("Overdue");
+        ToggleButton yesOverdueButton = new ToggleButton("Yes");
+        ToggleButton noOverdueButton = new ToggleButton("No");
+        ToggleGroup overdueGroup = new ToggleGroup();
+        yesButton.setToggleGroup(overdueGroup);
+        noButton.setToggleGroup(overdueGroup);
+        HBox overdueButtonBox = new HBox(0, yesOverdueButton, noOverdueButton);
+        VBox overdueBox = new VBox(10.0, overdueLabel, overdueButtonBox);
+
+        // Combine copies, borrowed/overdue, and waitlisted into hbox
+        HBox waitlistedOverdueBox = new HBox(20, waitlistedBox, overdueBox);
+        waitlistedOverdueBox.setPadding(new Insets(20, 0, 0 ,0));
+
+        // Create Loan Button
+        Button createLoanButton = new Button("Create Loan");
+        createLoanButton.setPrefWidth(150);
+        createLoanButton.setPrefHeight(100);
+
+        VBox createLoanBox = new VBox(10, createLoanButton);
+        createLoanBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // Main VBox containing the title and the main HBox
+        mainGrid.setPadding(new Insets(20, 0 ,0 ,0));
+        VBox mainRightContent = new VBox(10, loanInfoTitleBox, mainGrid, waitlistedOverdueBox, createLoanBox);
+
+        return mainRightContent;
     }
 
     private VBox createPeopleContent() {
@@ -848,6 +975,14 @@ public class LibraryApplication extends Application {
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
 
         table.getColumns().setAll(codeColumn, titleColumn);
+
+        table.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    if (newValue != null) {
+                        System.out.println("Selected item: " + newValue);
+                    }
+                }
+        );
 
         // Set the columns to take up equal space
         codeColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
