@@ -93,24 +93,14 @@ public class LibraryApplication extends Application {
         searchButton.setOnAction(event -> {
             String searchText = searchBar.getText();
             boolean found = false;
-            String line;
 
-            try (BufferedReader br = new BufferedReader(new FileReader("path/to/loans.csv"))) {
-                while ((line = br.readLine()) != null) {
-                    // Split the line by comma and check if it contains the search text
-                    String[] values = line.split(",");
-                    for (String value : values) {
-                        if (value.equals(searchText)) {
-                            found = true;
-                            break;
-                        }
+            CSVController loansCSV = new CSVController("path/to/loans.csv");
+            for (String[] lines : loansCSV.getCsvData())
+                for (String line : lines)
+                    if (line.equals(searchText)) {
+                        found = true;
+                        break;
                     }
-                    if (found) break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
             if (!found) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Alert");
