@@ -232,12 +232,24 @@ public class LibraryApplication extends Application {
         rightSide.getChildren().addAll(studentTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
                 broncoIdLabel, broncoIdField, courseBox, buttonContainer);
 
-        // Add a listener to the student list to show the right side when a student is selected
+        // Add a listener to the author list to show the right side when an author is selected
         studentList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 rightSide.setVisible(true);
+                rightSide.getChildren().clear();
+                rightSide.getChildren().addAll(studentTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+                        broncoIdLabel, broncoIdField, courseBox, buttonContainer);
                 // Populate fields based on the selected student here
             }
+        });
+
+        // Add new author should clear right side if it's shown and show add author UI
+        addNewStudentButton.setOnAction(event -> {
+            studentList.getSelectionModel().clearSelection();
+            rightSide.setVisible(true);
+            rightSide.getChildren().clear();
+            VBox addStudentRightSide = createAddStudentRightSideContent();
+            rightSide.getChildren().setAll(addStudentRightSide);
         });
 
         // Main People content
@@ -248,6 +260,51 @@ public class LibraryApplication extends Application {
         mainStudentsContent.setAlignment(Pos.CENTER);
 
         return mainStudentsContent;
+    }
+
+    private VBox createAddStudentRightSideContent() {
+
+        // Right side content
+        VBox rightSide = new VBox(10);
+        rightSide.setPadding(new Insets(10));
+        rightSide.setStyle("-fx-background-color: lightgray;");
+        rightSide.setPrefWidth(400);
+
+        // Author  title
+        Label studentTitleLabel = new Label("Add Student");
+        studentTitleLabel.setStyle("-fx-font-size: 16px;");
+        HBox studentTitleBox = new HBox(studentTitleLabel);
+        studentTitleBox.setAlignment(Pos.CENTER);
+
+        Label firstNameLabel = new Label("First Name");
+        TextField firstNameField = new TextField();
+        Label lastNameLabel = new Label("Last Name");
+        TextField lastNameField = new TextField();
+        Label broncoIdLabel = new Label("Nationality");
+        TextField broncoIdField = new TextField();
+        Label courseLabel = new Label("Course");
+        ComboBox<String> courseDropdown = new ComboBox<>();
+        courseDropdown.getItems().addAll("BA", "BS", "CS");
+        courseDropdown.setValue("CS"); // Default
+        HBox courseBox = new HBox(10, courseLabel, courseDropdown);
+        courseBox.setAlignment(Pos.CENTER_LEFT);
+
+
+        Button addButton = new Button("Add");
+        Button deleteButton = new Button("Cancel");
+        addButton.setMinHeight(45);
+        addButton.setPrefWidth(90);
+        deleteButton.setMinHeight(30);
+        deleteButton.setPrefWidth(90);
+        VBox buttonBox = new VBox(10, addButton, deleteButton);
+        HBox buttonContainer = new HBox(buttonBox);
+        buttonContainer.setAlignment(Pos.CENTER_RIGHT);
+        buttonContainer.setPadding(new Insets(20, 0 ,0, 0));
+
+        rightSide.getChildren().addAll(studentTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+                broncoIdLabel, broncoIdField, courseBox, buttonContainer);
+
+        return rightSide;
     }
 
     private VBox createAuthorsContent() {
@@ -326,7 +383,7 @@ public class LibraryApplication extends Application {
         rightSide.getChildren().addAll(authorTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
                 nationalityLabel, nationalityField, subjectLabel, subjectField, buttonContainer);
 
-        // Add a listener to the student list to show the right side when a student is selected
+        // Add a listener to the author list to show the right side when an author is selected
         authorList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 rightSide.setVisible(true);
