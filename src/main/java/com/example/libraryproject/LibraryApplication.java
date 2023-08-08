@@ -121,12 +121,6 @@ public class LibraryApplication extends Application {
             }
         });
 
-        HBox searchBox = new HBox(10, searchBar, searchButton);
-        searchBox.setAlignment(Pos.CENTER);
-
-        // Main content layout
-        VBox mainContent = new VBox(10, tabPane, searchBox);
-
         return mainContent;
     }
 
