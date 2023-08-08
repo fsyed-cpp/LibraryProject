@@ -135,10 +135,10 @@ public class LibraryApplication extends Application {
         Tab authorsTab = new Tab("Authors");
         Tab producersTab = new Tab("Producers");
 
-        // Content for the Students tab
+        // Content for the People tab
         VBox studentsContent = createStudentsContent();
         VBox authorsContent = createAuthorsContent();
-        VBox producersContent = createStudentsContent();
+        VBox producersContent = createProducersContent();
 
         studentsTab.setContent(studentsContent);
         authorsTab.setContent(authorsContent);
@@ -291,15 +291,19 @@ public class LibraryApplication extends Application {
 
 
         Button addButton = new Button("Add");
-        Button deleteButton = new Button("Cancel");
+        Button cancelButton = new Button("Cancel");
         addButton.setMinHeight(45);
         addButton.setPrefWidth(90);
-        deleteButton.setMinHeight(30);
-        deleteButton.setPrefWidth(90);
-        VBox buttonBox = new VBox(10, addButton, deleteButton);
+        cancelButton.setMinHeight(30);
+        cancelButton.setPrefWidth(90);
+        VBox buttonBox = new VBox(10, addButton, cancelButton);
         HBox buttonContainer = new HBox(buttonBox);
         buttonContainer.setAlignment(Pos.CENTER_RIGHT);
         buttonContainer.setPadding(new Insets(20, 0 ,0, 0));
+
+        cancelButton.setOnAction(event -> {
+            rightSide.getChildren().clear();
+        });
 
         rightSide.getChildren().addAll(studentTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
                 broncoIdLabel, broncoIdField, courseBox, buttonContainer);
@@ -322,7 +326,7 @@ public class LibraryApplication extends Application {
         leftSide.setStyle("-fx-background-color: lightgray;");
         leftSide.setPrefWidth(400);
 
-        // Student List title
+        // Author List title
         Label authorListLabel = new Label("Author List");
         authorListLabel.setStyle("-fx-font-size: 16px;");
         HBox authorListTitleBox = new HBox(authorListLabel);
@@ -404,10 +408,10 @@ public class LibraryApplication extends Application {
         });
 
         // Main People content
-        HBox studentsContent = new HBox(30, leftSide, rightSide);
-        studentsContent.setAlignment(Pos.CENTER);
+        HBox authorsContent = new HBox(30, leftSide, rightSide);
+        authorsContent.setAlignment(Pos.CENTER);
 
-        VBox mainStudentsContent = new VBox(10, authorManagementBox, studentsContent);
+        VBox mainStudentsContent = new VBox(10, authorManagementBox, authorsContent);
         mainStudentsContent.setAlignment(Pos.CENTER);
 
         return mainStudentsContent;
@@ -437,18 +441,173 @@ public class LibraryApplication extends Application {
         TextField subjectField = new TextField();
 
         Button addButton = new Button("Add");
-        Button deleteButton = new Button("Cancel");
+        Button cancelButton = new Button("Cancel");
         addButton.setMinHeight(45);
         addButton.setPrefWidth(90);
-        deleteButton.setMinHeight(30);
-        deleteButton.setPrefWidth(90);
-        VBox buttonBox = new VBox(10, addButton, deleteButton);
+        cancelButton.setMinHeight(30);
+        cancelButton.setPrefWidth(90);
+        VBox buttonBox = new VBox(10, addButton, cancelButton);
         HBox buttonContainer = new HBox(buttonBox);
+
+        cancelButton.setOnAction(event -> {
+            rightSide.getChildren().clear();
+        });
+
         buttonContainer.setAlignment(Pos.CENTER_RIGHT);
         buttonContainer.setPadding(new Insets(20, 0 ,0, 0));
 
         rightSide.getChildren().addAll(authorTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
                 nationalityLabel, nationalityField, subjectLabel, subjectField, buttonContainer);
+
+        return rightSide;
+    }
+
+    private VBox createProducersContent() {
+
+        Label producerManagementLabel = new Label("Producer Management");
+        producerManagementLabel.setStyle("-fx-font-size: 20px;");
+        HBox producerManagementBox = new HBox(producerManagementLabel);
+        producerManagementBox.setAlignment(Pos.CENTER);
+        Insets padding = new Insets(20, 0, 0, 0);
+        producerManagementBox.setPadding(padding);
+
+        // Left side content
+        VBox leftSide = new VBox(10);
+        leftSide.setPadding(new Insets(10));
+        leftSide.setStyle("-fx-background-color: lightgray;");
+        leftSide.setPrefWidth(400);
+
+        // Producer List title
+        Label producerListLabel = new Label("Producer List");
+        producerListLabel.setStyle("-fx-font-size: 16px;");
+        HBox producerListTitleBox = new HBox(producerListLabel);
+        producerListTitleBox.setAlignment(Pos.CENTER);
+
+        ComboBox<String> filterDropdown = new ComboBox<>();
+        filterDropdown.getItems().addAll("Name", "Item ID");
+        filterDropdown.setValue("Filter by:"); // Set the default value to "Name"
+
+        TextField searchBar = new TextField();
+        Button filterButton = new Button("Filter");
+
+        // Horizontally align dropdown, search bar, and filter button
+        HBox filterBar = new HBox(10, filterDropdown, searchBar, filterButton);
+        filterBar.setAlignment(Pos.CENTER);
+
+        ListView<String> producerList = new ListView<>();
+        // Add sample producers to list
+        // TODO: (replace with actual data)
+        producerList.getItems().addAll("Ernest Hemingway");
+        Button addNewAuthorButton = new Button("Add New Producer");
+
+        leftSide.getChildren().addAll(producerListTitleBox, filterBar, producerList, addNewAuthorButton);
+
+        // Right side content
+        VBox rightSide = new VBox(10);
+        rightSide.setPadding(new Insets(10));
+        rightSide.setStyle("-fx-background-color: lightgray;");
+        rightSide.setPrefWidth(400);
+
+        // Don't show until a student is selected
+        rightSide.setVisible(false);
+
+        // Author  title
+        Label producerTitleLabel = new Label("Producer");
+        producerTitleLabel.setStyle("-fx-font-size: 16px;");
+        HBox producerTitleBox = new HBox(producerTitleLabel);
+        producerTitleBox.setAlignment(Pos.CENTER);
+
+        Label firstNameLabel = new Label("First Name");
+        TextField firstNameField = new TextField();
+        Label lastNameLabel = new Label("Last Name");
+        TextField lastNameField = new TextField();
+        Label nationalityLabel = new Label("Nationality");
+        TextField nationalityField = new TextField();
+        Label styleLabel = new Label("Style");
+        TextField styleField = new TextField();
+
+        Button updateButton = new Button("Update");
+        Button deleteButton = new Button("Delete");
+        updateButton.setMinHeight(45);
+        deleteButton.setMinHeight(30);
+        VBox buttonBox = new VBox(10, updateButton, deleteButton);
+        HBox buttonContainer = new HBox(buttonBox);
+        buttonContainer.setAlignment(Pos.CENTER_RIGHT);
+        buttonContainer.setPadding(new Insets(20, 0 ,0, 0));
+
+        rightSide.getChildren().addAll(producerTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+                nationalityLabel, nationalityField, styleLabel, styleField, buttonContainer);
+
+        // Add a listener to the author list to show the right side when an author is selected
+        producerList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                rightSide.setVisible(true);
+                rightSide.getChildren().clear();
+                rightSide.getChildren().addAll(producerTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+                        nationalityLabel, nationalityField, styleLabel, styleField, buttonContainer);
+                // Populate fields based on the selected student here
+            }
+        });
+
+        // Add new author should clear right side if it's shown and show add author UI
+        addNewAuthorButton.setOnAction(event -> {
+            producerList.getSelectionModel().clearSelection();
+            rightSide.setVisible(true);
+            rightSide.getChildren().clear();
+            VBox addProducerRightSide = createAddProducerRightSideContent();
+            rightSide.getChildren().setAll(addProducerRightSide);
+        });
+
+        // Main People content
+        HBox producerContent = new HBox(30, leftSide, rightSide);
+        producerContent.setAlignment(Pos.CENTER);
+
+        VBox mainStudentsContent = new VBox(10, producerManagementBox, producerContent);
+        mainStudentsContent.setAlignment(Pos.CENTER);
+
+        return mainStudentsContent;
+    }
+
+    private VBox createAddProducerRightSideContent() {
+
+        // Right side content
+        VBox rightSide = new VBox(10);
+        rightSide.setPadding(new Insets(10));
+        rightSide.setStyle("-fx-background-color: lightgray;");
+        rightSide.setPrefWidth(400);
+
+        // Author  title
+        Label producerTitleLabel = new Label("Add Producer");
+        producerTitleLabel.setStyle("-fx-font-size: 16px;");
+        HBox producerTitleBox = new HBox(producerTitleLabel);
+        producerTitleBox.setAlignment(Pos.CENTER);
+
+        Label firstNameLabel = new Label("First Name");
+        TextField firstNameField = new TextField();
+        Label lastNameLabel = new Label("Last Name");
+        TextField lastNameField = new TextField();
+        Label nationalityLabel = new Label("Nationality");
+        TextField nationalityField = new TextField();
+        Label styleLabel = new Label("Subject");
+        TextField styleField = new TextField();
+
+        Button addButton = new Button("Add");
+        Button cancelButton = new Button("Cancel");
+        addButton.setMinHeight(45);
+        addButton.setPrefWidth(90);
+        cancelButton.setMinHeight(30);
+        cancelButton.setPrefWidth(90);
+        VBox buttonBox = new VBox(10, addButton, cancelButton);
+        HBox buttonContainer = new HBox(buttonBox);
+        buttonContainer.setAlignment(Pos.CENTER_RIGHT);
+        buttonContainer.setPadding(new Insets(20, 0 ,0, 0));
+
+        cancelButton.setOnAction(event -> {
+            rightSide.getChildren().clear();
+        });
+
+        rightSide.getChildren().addAll(producerTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
+                nationalityLabel, nationalityField, styleLabel, styleField, buttonContainer);
 
         return rightSide;
     }
