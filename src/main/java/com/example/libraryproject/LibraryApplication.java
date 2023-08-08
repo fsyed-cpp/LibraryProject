@@ -196,11 +196,11 @@ public class LibraryApplication extends Application {
 
         // RIGHT SIDE !!
 
-        Label buttonTitleLabel = new Label("Book");
-        HBox buttonTitleBox = new HBox((buttonTitleLabel));
-        buttonTitleBox.setAlignment(Pos.CENTER);
-        buttonTitleLabel.setAlignment(Pos.CENTER);
-        buttonTitleLabel.setFont(new Font("Arial", 20));
+        Label loanTitleLabel = new Label("Loan Information");
+        HBox loanInfoTitleBox = new HBox((loanTitleLabel));
+        loanInfoTitleBox.setAlignment(Pos.CENTER);
+        loanTitleLabel.setAlignment(Pos.CENTER);
+        loanTitleLabel.setFont(new Font("Arial", 20));
 
         // Create a GridPane for the fields
         GridPane fieldsGrid = new GridPane();
@@ -215,81 +215,51 @@ public class LibraryApplication extends Application {
         TextField titleField = new TextField();
         fieldsGrid.addRow(1, new Label("Title"), titleField);
 
-        // Location field
-        TextField locationField = new TextField();
-        fieldsGrid.addRow(2, new Label("Location"), locationField);
+        // Requested Days with dropdown
+        ComboBox<String> reqDaysDropdown = new ComboBox<>();
+        reqDaysDropdown.setValue("10");
+        fieldsGrid.addRow(2, new Label("Requested Days"), reqDaysDropdown);
 
-        // Price/D field with dropdown
-        ComboBox<String> priceDropdown = new ComboBox<>();
-        priceDropdown.setValue("$1.20");
-        // You can add items to the dropdown here
-        fieldsGrid.addRow(3, new Label("Price/D"), priceDropdown);
+        // Loan Date field
+        DatePicker loanDateField = new DatePicker();
+        fieldsGrid.addRow(3, new Label("Loan Date"), loanDateField);
+
+        // Due Date field
+        DatePicker dueDateField = new DatePicker();
+        fieldsGrid.addRow(4, new Label("Due Date"), dueDateField);
 
         // Left VBox containing the fields
         VBox rightSideLeftVBox = new VBox(fieldsGrid);
 
-        // Authors list
-        ListView<String> authorsList = new ListView<>();
-        authorsList.setPrefHeight(100);
-        // add authors here...
+        // rightSideRight VBox
+        GridPane rightFieldsGrid = new GridPane();
+        rightFieldsGrid.setHgap(5);
+        rightFieldsGrid.setVgap(10);
 
-        // + and - buttons
-        Button addButton = new Button("+");
-        Button removeButton = new Button("-");
-        // HBox for + and - buttons
-        HBox authorButtonsHBox = new HBox(5, addButton, removeButton);
-        authorButtonsHBox.setAlignment(Pos.BOTTOM_RIGHT);
+        // Daily Price field
+        TextField dailyPriceField = new TextField();
+        rightFieldsGrid.addRow(0, new Label("Due Date"), dailyPriceField);
 
-        // VBox for authors list and buttons
-        VBox authorsVBox = new VBox(5, new Label("Authors"), authorsList, authorButtonsHBox);
-        authorsVBox.setPadding(new Insets(-5));
+        // Accrued field
+        TextField accruedField = new TextField();
+        rightFieldsGrid.addRow(1, new Label("Accrued"), accruedField);
+
+        // Fines field
+        TextField finesField = new TextField();
+        rightFieldsGrid.addRow(2, new Label("Fines"), finesField);
+
+        // Total Due field
+        TextField totalDueField = new TextField();
+        rightFieldsGrid.addRow(3, new Label("Total Due"), totalDueField);
+
+        VBox rightSideRightVBox = new VBox(rightFieldsGrid);
+
 
         // GridPane containing left and right sections
         GridPane mainGrid = new GridPane();
         mainGrid.add(rightSideLeftVBox, 0, 0);
-        mainGrid.add(authorsVBox, 1, 0);
-        mainGrid.setHgap(110);
-
-        // Create The Book Info section
-        Label pagesLabel = new Label("Pages");
-        TextField pagesTextField = new TextField();
-        pagesTextField.setPrefWidth(100);
-
-        Label pubDateLabel = new Label("Pub Date");
-        DatePicker pubDateField = new DatePicker();
-        pubDateField.setPrefWidth(120);
-
-        Label publisherLabel = new Label("Publisher");
-        TextField publisherTextField = new TextField();
-
-        HBox firstHBox = new HBox(10, pagesLabel, pagesTextField, pubDateLabel, pubDateField, publisherLabel, publisherTextField);
-        firstHBox.setAlignment(Pos.CENTER_LEFT);
-
-        // Second HBox
-        Label descriptionLabel = new Label("Description");
-        TextField descriptionTextField = new TextField();
-        descriptionTextField.setMaxWidth(Double.MAX_VALUE);
-
-        HBox secondHBox = new HBox(10, descriptionLabel, descriptionTextField);
-        secondHBox.setAlignment(Pos.CENTER_LEFT);
-        HBox.setHgrow(descriptionTextField, Priority.ALWAYS);
-
-        // Main VBox
-        VBox additionalBookInfo = new VBox(10, firstHBox, secondHBox);
-        additionalBookInfo.setPadding(new Insets(50, 0, 0 ,0));
-
-        // Copies
-        Label copiesLabel = new Label("Copies");
-        ComboBox<String> copiesDropdown = new ComboBox<>();
-        copiesDropdown.getItems().addAll("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
-        copiesDropdown.setValue("3");
-        VBox copies = new VBox(10, copiesLabel, copiesDropdown);
-
-        // Borrowed / Overdue
-        // TODO: Insert actual borrowed/overdue items from DB
-        HBox borrowedBox = new HBox(10, new Label("Borrowed"), new Label("3"));
-        HBox overdueBox = new HBox(10, new Label("Overdue"), new Label("  2"));
-        VBox borrowedOverdueBox = new VBox(15, borrowedBox, overdueBox);
+        mainGrid.add(rightSideRightVBox, 1, 0);
+        mainGrid.setHgap(80);
 
         // Waitlisted
         Label waitListedLabel = new Label("Waitlisted");
@@ -301,24 +271,35 @@ public class LibraryApplication extends Application {
         HBox waitlistedButtonBox = new HBox(0, yesButton, noButton);
         VBox waitlistedBox = new VBox(10.0, waitListedLabel, waitlistedButtonBox);
 
+        // Overdue
+        Label overdueLabel = new Label("Overdue");
+        ToggleButton yesOverdueButton = new ToggleButton("Yes");
+        ToggleButton noOverdueButton = new ToggleButton("No");
+        ToggleGroup overdueGroup = new ToggleGroup();
+        yesButton.setToggleGroup(overdueGroup);
+        noButton.setToggleGroup(overdueGroup);
+        HBox overdueButtonBox = new HBox(0, yesOverdueButton, noOverdueButton);
+        VBox overdueBox = new VBox(10.0, overdueLabel, overdueButtonBox);
+
         // Combine copies, borrowed/overdue, and waitlisted into hbox
-        HBox detailedBookInfo = new HBox(20, copies, borrowedOverdueBox, waitlistedBox);
-        detailedBookInfo.setPadding(new Insets(50, 0, 0 ,0));
+        HBox waitlistedOverdueBox = new HBox(20, waitlistedBox, overdueBox);
+        waitlistedOverdueBox.setPadding(new Insets(20, 0, 0 ,0));
 
         // Update/Delete Buttons
-        Button updateButton = new Button("Update");
-        updateButton.setPrefWidth(150);
-        updateButton.setPrefHeight(80);
+        Button returnItemButton = new Button("Return Item");
+        returnItemButton.setPrefWidth(150);
+        returnItemButton.setPrefHeight(80);
 
-        Button deleteButton = new Button("Delete");
-        deleteButton.setPrefWidth(70);
-        deleteButton.setPrefHeight(80);
+        Button deleteButton = new Button("Delete Loan");
+        deleteButton.setPrefWidth(150);
+        deleteButton.setPrefHeight(50);
 
-        HBox updateDelBox = new HBox(10, updateButton, deleteButton);
+        VBox updateDelBox = new VBox(10, returnItemButton, deleteButton);
         updateDelBox.setAlignment(Pos.BOTTOM_RIGHT);
 
         // Main VBox containing the title and the main HBox
-        VBox mainRightContent = new VBox(10, buttonTitleBox, mainGrid, additionalBookInfo, detailedBookInfo, updateDelBox);
+        mainGrid.setPadding(new Insets(20, 0 ,0 ,0));
+        VBox mainRightContent = new VBox(10, loanInfoTitleBox, mainGrid, waitlistedOverdueBox, updateDelBox);
         rightSide.getChildren().setAll(mainRightContent);
 
         // Main content layout (with equal widths for left and right sides)
