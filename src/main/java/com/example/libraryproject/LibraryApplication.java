@@ -18,10 +18,12 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Date;
 
 public class LibraryApplication extends Application {
 
     private Boolean isLoanDetailAdded = false;
+    private Boolean isComprehensiveLoanDetailAdded = false;
 
     @Override
     public void start(Stage primaryStage) {
@@ -162,6 +164,49 @@ public class LibraryApplication extends Application {
             }
         });
 
+        // Comprehensive button functionality:
+        comprehensiveSearchButton.setOnAction(event -> {
+            String searchText = searchBar.getText();
+            boolean found = false;
+            String line;
+
+            try (BufferedReader br = new BufferedReader(new FileReader("path/to/loans.csv"))) {
+                while ((line = br.readLine()) != null) {
+                    // Split the line by comma and check if it contains the search text
+                    String[] values = line.split(",");
+                    for (String value : values) {
+                        if (value.equals(searchText)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // TESTING !!!! REMOVE WHEN WE ADD CSV DATA FOR LOANS !!
+            found = true;
+
+            if (!found) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Alert");
+                alert.setHeaderText("Bronco ID not found in database");
+                alert.setContentText("Please check to make sure the ID is correct");
+                alert.showAndWait();
+            } else {
+                // Show loan content for the comprehensive tab
+                VBox comprehensiveLoansDetailContent = createComprehensiveLoanDetailContent();
+                if (!isComprehensiveLoanDetailAdded) {
+                    comprehensiveMainContent.getChildren().add(comprehensiveLoansDetailContent);
+                    comprehensiveTab.setContent(comprehensiveMainContent);
+                    tabPane.getTabs().addAll(comprehensiveTab);
+                    isComprehensiveLoanDetailAdded = true;
+                }
+            }
+        });
+
         standardTab.setContent(standardMainContent);
         comprehensiveTab.setContent(comprehensiveMainContent);
         tabPane.getTabs().addAll(standardTab, comprehensiveTab);
@@ -245,6 +290,96 @@ public class LibraryApplication extends Application {
         buttonBox.setPrefHeight(100);
 
         leftSide.getChildren().setAll(loanTitleBox, table, buttonBox);
+
+        // RIGHT SIDE !!
+        rightSide.getChildren().setAll(createLoanInformationContent());
+
+        // Main content layout (with equal widths for left and right sides)
+        HBox mainContent = new HBox(leftSide, rightSide);
+        mainContent.setSpacing(20); // Spacing between left and right sides
+        mainContent.setPadding(new Insets(25));
+
+        // Combining the search area with the main content
+        VBox fullContent = new VBox(10, mainContent);
+
+        return fullContent;
+    }
+
+    private VBox createComprehensiveLoanDetailContent() {
+
+        // Left Side
+        VBox leftSide = new VBox();
+        leftSide.setPadding(new Insets(10));
+        leftSide.setSpacing(10);
+        leftSide.setStyle("-fx-background-color: lightgray;");
+        leftSide.setPrefWidth(300);
+
+        // Right Side
+        VBox rightSide = new VBox();
+        rightSide.setPadding(new Insets(10));
+        rightSide.setSpacing(10);
+        rightSide.setStyle("-fx-background-color: lightgray;");
+        rightSide.setPrefWidth(600);
+        rightSide.setVisible(false);
+
+        // Title
+        Label titleLabel = new Label("Active Loans");
+        HBox loanTitleBox = new HBox((titleLabel));
+        loanTitleBox.setAlignment(Pos.CENTER);
+        titleLabel.setAlignment(Pos.CENTER);
+        titleLabel.setFont(new Font("Arial", 20)); // Set the font size
+
+        // Table for Code and Title
+        TableView<LoanItem> table = new TableView<>();
+        TableColumn<LoanItem, String> loanColumn = new TableColumn<>("Loan #");
+        loanColumn.setCellValueFactory(new PropertyValueFactory<>("loan"));
+        TableColumn<LoanItem, String> dueDateColumn = new TableColumn<>("Due Date");
+        dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
+
+        table.getColumns().setAll(loanColumn, dueDateColumn);
+
+        // Set the columns to take up equal space
+        loanColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
+        dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
+
+        // Dummy data
+        ObservableList<LoanItem> data = FXCollections.observableArrayList(
+                new LoanItem("0244L", "02/27/23"),
+                new LoanItem("2389L", "03/25/23")
+        );
+
+        // Setting the dummy data to the table
+        table.setItems(data);
+
+        table.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    if (newValue != null) {
+                        // show loan info
+                        rightSide.getChildren().clear();
+                        rightSide.setVisible(true);
+                        rightSide.getChildren().setAll(createLoanInformationContent());
+                    }
+                }
+        );
+
+        // Checkbox filters
+        DatePicker dueBeforeField = new DatePicker();
+        dueBeforeField.setPrefWidth(100);
+        DatePicker dueAfterField = new DatePicker();
+        dueAfterField.setPrefWidth(100);
+
+        HBox dueBeforeBox = new HBox(15, new CheckBox("Due Before"), dueBeforeField);
+        HBox dueAfterBox = new HBox(24, new CheckBox("Due After"), dueAfterField);
+        CheckBox overdueBox = new CheckBox("Overdue");
+
+        // VBox for the left side with the checkboxes
+        VBox leftVBox = new VBox(5, dueBeforeBox, dueAfterBox, overdueBox);
+        leftVBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Define a specific width for the left VBox
+        leftVBox.setPrefWidth(150);
+
+        leftSide.getChildren().setAll(loanTitleBox, table, leftVBox);
 
         // RIGHT SIDE !!
         rightSide.getChildren().setAll(createLoanInformationContent());
