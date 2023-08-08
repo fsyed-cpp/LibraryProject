@@ -1195,10 +1195,18 @@ public class LibraryApplication extends Application {
         bookButton.setOnAction(event -> {
             table.getSelectionModel().clearSelection();
             rightSide.getChildren().clear();
+            rightSide.setVisible(true);
             rightSide.getChildren().setAll(createAddBookContent());
         });
 
         Button documentButton = new Button("Docu.");
+        documentButton.setOnAction(event -> {
+            table.getSelectionModel().clearSelection();
+            rightSide.getChildren().clear();
+            rightSide.setVisible(true);
+            rightSide.getChildren().setAll(createAddDocumentaryContent());
+        });
+
         HBox bookDocBox = new HBox(10, bookButton, documentButton);
         VBox addNewBox = new VBox(15, addNew, bookDocBox);
 
@@ -1462,6 +1470,115 @@ public class LibraryApplication extends Application {
 
         // Main VBox containing the title and the main HBox
         VBox mainRightContent = new VBox(10, newBookTitleBox, mainGrid, additionalBookInfo, detailedBookInfo, updateDelBox);
+        return mainRightContent;
+    }
+
+    private VBox createAddDocumentaryContent() {
+
+        Label newDocTitleLabel = new Label("Add New Documentary");
+        HBox newDocTitleBox = new HBox((newDocTitleLabel));
+        newDocTitleBox.setAlignment(Pos.CENTER);
+        newDocTitleLabel.setAlignment(Pos.CENTER);
+        newDocTitleLabel.setFont(new Font("Arial", 20));
+
+        // Create a GridPane for the fields
+        GridPane fieldsGrid = new GridPane();
+        fieldsGrid.setHgap(5);
+        fieldsGrid.setVgap(10);
+
+        // Code field
+        TextField codeField = new TextField();
+        fieldsGrid.addRow(0, new Label("Code"), codeField);
+
+        // Title field
+        TextField titleField = new TextField();
+        fieldsGrid.addRow(1, new Label("Title"), titleField);
+
+        // Location field
+        TextField locationField = new TextField();
+        fieldsGrid.addRow(2, new Label("Location"), locationField);
+
+        // Price/D field with dropdown
+        ComboBox<String> priceDropdown = new ComboBox<>();
+        priceDropdown.setValue("$1.20");
+        // You can add items to the dropdown here
+        fieldsGrid.addRow(3, new Label("Price/D"), priceDropdown);
+
+        // Left VBox containing the fields
+        VBox rightSideLeftVBox = new VBox(fieldsGrid);
+
+        // Authors list
+        ListView<String> authorsList = new ListView<>();
+        authorsList.setPrefHeight(100);
+        // add authors here...
+
+        // + and - buttons
+        Button addButton = new Button("+");
+        Button removeButton = new Button("-");
+        // HBox for + and - buttons
+        HBox authorButtonsHBox = new HBox(5, addButton, removeButton);
+        authorButtonsHBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // VBox for directors list and buttons
+        VBox directorsVBox = new VBox(5, new Label("Directors"), authorsList, authorButtonsHBox);
+        directorsVBox.setPadding(new Insets(-5));
+
+        // GridPane containing left and right sections
+        GridPane mainGrid = new GridPane();
+        mainGrid.add(rightSideLeftVBox, 0, 0);
+        mainGrid.add(directorsVBox, 1, 0);
+        mainGrid.setHgap(110);
+
+        // Create The Doc Info section
+        Label lengthLabel = new Label("Length");
+        TextField lengthTextField = new TextField();
+        lengthTextField.setPrefWidth(80);
+
+        Label releaseDateLabel = new Label("Release Date");
+        DatePicker releaseDateField = new DatePicker();
+        releaseDateField.setPrefWidth(120);
+
+        HBox firstHBox = new HBox(10, lengthLabel, lengthTextField, releaseDateLabel, releaseDateField);
+        firstHBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Second HBox
+        Label descriptionLabel = new Label("Description");
+        TextField descriptionTextField = new TextField();
+        descriptionTextField.setMaxWidth(Double.MAX_VALUE);
+
+        HBox secondHBox = new HBox(10, descriptionLabel, descriptionTextField);
+        secondHBox.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(descriptionTextField, Priority.ALWAYS);
+
+        // Main VBox
+        VBox additionalDocInfo = new VBox(10, firstHBox, secondHBox);
+        additionalDocInfo.setPadding(new Insets(50, 0, 0 ,0));
+
+        // Copies
+        Label copiesLabel = new Label("Copies");
+        ComboBox<String> copiesDropdown = new ComboBox<>();
+        copiesDropdown.getItems().addAll("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
+        copiesDropdown.setValue("3");
+        VBox copies = new VBox(10, copiesLabel, copiesDropdown);
+
+        // Combine copies, borrowed/overdue, and waitlisted into hbox
+        HBox detailedDocInfo = new HBox(20, copies);
+        detailedDocInfo.setPadding(new Insets(50, 0, 0 ,0));
+
+        // Update/Delete Buttons
+        Button addNewItemButton = new Button("Add New Item");
+        addNewItemButton.setPrefWidth(150);
+        addNewItemButton.setPrefHeight(80);
+
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setPrefWidth(70);
+        cancelButton.setPrefHeight(80);
+
+        HBox updateDelBox = new HBox(10, addNewItemButton, cancelButton);
+        updateDelBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // Main VBox containing the title and the main HBox
+        VBox mainRightContent = new VBox(10, newDocTitleBox, mainGrid, additionalDocInfo, detailedDocInfo, updateDelBox);
         return mainRightContent;
     }
 
