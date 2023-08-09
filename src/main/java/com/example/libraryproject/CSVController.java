@@ -49,6 +49,14 @@ public class CSVController {
         return false;
     }
 
+    public boolean search(String searchQuery, int index) {
+        for (String[] lines : this.getCsvData())
+            if (lines[index].equals(searchQuery)) {
+                return true;
+            }
+        return false;
+    }
+
     public String searchAndReturnString(String searchQuery) {
         int ind = 0;
         for (String[] lines : this.getCsvData()) {
@@ -56,6 +64,17 @@ public class CSVController {
                 if (line.equals(searchQuery)) {
                     return String.join(",", this.getCsvData().get(ind));
                 }
+            ind++;
+        }
+        return null;
+    }
+
+    public String searchAndReturnString(String searchQuery, int index) {
+        int ind = 0;
+        for (String[] lines : this.getCsvData()) {
+            if (lines[index].equals(searchQuery)) {
+                return String.join(",", this.getCsvData().get(ind));
+            }
             ind++;
         }
         return null;
@@ -71,5 +90,24 @@ public class CSVController {
             ind++;
         }
         return null;
+    }
+
+    public String[] searchAndReturnStringArray(String searchQuery, int index) {
+        int ind = 0;
+        for (String[] lines : this.getCsvData()) {
+            if (lines[index].equals(searchQuery)) {
+                return this.getCsvData().get(ind);
+            }
+            ind++;
+        }
+        return null;
+    }
+
+    public void deleteLine(int ind) {
+        this.getCsvData().remove(ind);
+    }
+
+    public void addLine(String[] content) {
+        this.getCsvData().add(content);
     }
 }
