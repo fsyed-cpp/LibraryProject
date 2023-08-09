@@ -9,6 +9,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
@@ -18,7 +19,9 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 
 /*
 loans.csv:
@@ -39,10 +42,6 @@ authors.csv:
     nationality
     subject
 
-authorgroups.csv:
-    itemID
-    author first and last name
-
 directors.csv:
     first and last name
     nationality
@@ -53,14 +52,16 @@ items.csv:
     title
     location
     daily price
+    total copies
     borrowed copies
-    available copies
     overdue copies
 
-    authorgroup = itemID
+    //BOOK ONLY!
+    author
     page count
     publishing date
 
+    //FILM ONLY!
     director
     film length
     release date
@@ -71,12 +72,13 @@ public class LibraryApplication extends Application {
     private Boolean isLoanDetailAdded = false;
     private Boolean isComprehensiveLoanDetailAdded = false;
 
-    private CSVController loanController = new CSVController("data/loans.csv");
-    private CSVController itemController = new CSVController("data/items.csv");
-    private CSVController studentController = new CSVController("data/students.csv");
-    private CSVController authorController = new CSVController("data/authors.csv");
-    private CSVController authorgroupController = new CSVController("data/authorgroups.csv");
-    private CSVController directorController = new CSVController("data/directors.csv");
+    private CSVController loanCSV = new CSVController("data/loans.csv", new String[]{"loanID", "itemID", "broncoID", "loandate", "duedate"});
+    private CSVController itemController = new CSVController("data/items.csv", new String[]{"code","title","location","dailyprice","copies","borrowed","overdue","authors","pages","pubdate","producers","length","releasedate"});
+    private CSVController studentController = new CSVController("data/students.csv", new String[]{"broncoID","firstName","lastName","major"});
+    private CSVController authorController = new CSVController("data/authors.csv", new String[]{"authorname","nationality","subject"});
+    private CSVController directorController = new CSVController("data/directors.csv", new String[]{"producerName","Nationality","subject"});
+
+
 
     @Override
     public void start(Stage primaryStage) {
@@ -178,16 +180,8 @@ public class LibraryApplication extends Application {
 
         // Search button functionality:
         searchButton.setOnAction(event -> {
-            String searchText = searchBar.getText();
-            boolean found = false;
-
-            CSVController loansCSV = new CSVController("path/to/loans.csv");
-            for (String[] lines : loansCSV.getCsvData())
-                for (String line : lines)
-                    if (line.equals(searchText)) {
-                        found = true;
-                        break;
-                    }
+            String searchText = searchBar.getText(); //returns broncoID
+            boolean found = loanController.search(searchText, "broncoID");
             if (!found) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Alert");
@@ -196,7 +190,7 @@ public class LibraryApplication extends Application {
                 alert.showAndWait();
             } else {
                 // Show loan content for the standard tab
-                VBox loanDetailContent = createLoanDetailContent();
+                VBox loanDetailContent = createLoanDetailContent(searchText);
                 if (!isLoanDetailAdded) {
                     standardMainContent.getChildren().add(loanDetailContent);
                     standardTab.setContent(standardMainContent);
@@ -208,38 +202,42 @@ public class LibraryApplication extends Application {
 
         // Comprehensive button functionality:
         comprehensiveSearchButton.setOnAction(event -> {
-            String searchText = searchBar.getText();
-            boolean found = false;
-            String line;
-
-            try (BufferedReader br = new BufferedReader(new FileReader("path/to/loans.csv"))) {
-                while ((line = br.readLine()) != null) {
-                    // Split the line by comma and check if it contains the search text
-                    String[] values = line.split(",");
-                    for (String value : values) {
-                        if (value.equals(searchText)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found) break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            String searchText = searchBar.getText(); //returns either loan#, broncoID, or itemID depending on combobox
+            boolean found;
+            switch (searchFilterDropDown.getSelectionModel().getSelectedItem()) {
+                case "Loan #":
+                    found = loanController.search(searchText, "loanID");
+                    break;
+                case "Item Code":
+                    found = loanController.search(searchText, "itemID");
+                    break;
+                case "Bronco ID":
+                default:
+                    found = loanController.search(searchText, "broncoID");
+                    break;
             }
-
-            // TESTING !!!! REMOVE WHEN WE ADD CSV DATA FOR LOANS !!
-            found = true;
-
             if (!found) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Alert");
-                alert.setHeaderText("Bronco ID not found in database");
+                alert.setHeaderText("Search term not found in database");
                 alert.setContentText("Please check to make sure the ID is correct");
                 alert.showAndWait();
             } else {
                 // Show loan content for the comprehensive tab
-                VBox comprehensiveLoansDetailContent = createComprehensiveLoanDetailContent();
+                VBox comprehensiveLoansDetailContent;
+                switch (searchFilterDropDown.getSelectionModel().getSelectedItem()) {
+                    case "Loan #":
+                        comprehensiveLoansDetailContent = createComprehensiveLoanDetailContent(loanController.searchAndReturnSetOfHashMaps(searchText, "loanID"));
+                        break;
+                    case "Item Code":
+                        comprehensiveLoansDetailContent = createComprehensiveLoanDetailContent(loanController.searchAndReturnSetOfHashMaps(searchText, "itemID"));
+                        break;
+                    case "Bronco ID":
+                    default:
+                        comprehensiveLoansDetailContent = createComprehensiveLoanDetailContent(loanController.searchAndReturnSetOfHashMaps(searchText, "broncoID"));
+                        break;
+
+                }
                 if (!isComprehensiveLoanDetailAdded) {
                     comprehensiveMainContent.getChildren().add(comprehensiveLoansDetailContent);
                     comprehensiveTab.setContent(comprehensiveMainContent);
@@ -258,7 +256,7 @@ public class LibraryApplication extends Application {
         return loansContent;
     }
 
-    private VBox createLoanDetailContent() {
+    private VBox createLoanDetailContent(String broncoID) {
         // Left Side
         VBox leftSide = new VBox();
         leftSide.setPadding(new Insets(10));
@@ -275,17 +273,18 @@ public class LibraryApplication extends Application {
         rightSide.setVisible(false);
 
         // Title "<Person Name?"
-        Label titleLabel = new Label("John Smith"); // TODO: Change to actual name
+        String[] personEntry = studentController.searchAndReturnHashMap(broncoID,"broncoID");
+        Label titleLabel = new Label(String.join(" ", personEntry[1], personEntry[2]));
         HBox loanTitleBox = new HBox((titleLabel));
         loanTitleBox.setAlignment(Pos.CENTER);
         titleLabel.setAlignment(Pos.CENTER);
         titleLabel.setFont(new Font("Arial", 20)); // Set the font size
 
         // Table for Code and Title
-        TableView<LoanItem> table = new TableView<>();
-        TableColumn<LoanItem, String> loanColumn = new TableColumn<>("Loan #");
+        TableView<String[]> table = new TableView<>();
+        TableColumn<String[], String> loanColumn = new TableColumn<>("Loan #");
         loanColumn.setCellValueFactory(new PropertyValueFactory<>("loan"));
-        TableColumn<LoanItem, String> dueDateColumn = new TableColumn<>("Due Date");
+        TableColumn<String[], String> dueDateColumn = new TableColumn<>("Due Date");
         dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
 
         table.getColumns().setAll(loanColumn, dueDateColumn);
@@ -295,9 +294,8 @@ public class LibraryApplication extends Application {
         dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
         // Dummy data
-        ObservableList<LoanItem> data = FXCollections.observableArrayList(
-                new LoanItem("0244L", "02/27/23"),
-                new LoanItem("2389L", "03/25/23")
+        ObservableList<String[]> data = FXCollections.observableArrayList(
+                loanController.searchAndReturnSetOfHashMaps(broncoID, 2)
         );
 
         // Setting the dummy data to the table
@@ -347,7 +345,7 @@ public class LibraryApplication extends Application {
         return fullContent;
     }
 
-    private VBox createComprehensiveLoanDetailContent() {
+    private VBox createComprehensiveLoanDetailContent(ArrayList<LinkedHashMap<String, String>> setOfLoans) {
 
         // Left Side
         VBox leftSide = new VBox();
@@ -372,11 +370,11 @@ public class LibraryApplication extends Application {
         titleLabel.setFont(new Font("Arial", 20)); // Set the font size
 
         // Table for Code and Title
-        TableView<LoanItem> table = new TableView<>();
-        TableColumn<LoanItem, String> loanColumn = new TableColumn<>("Loan #");
-        loanColumn.setCellValueFactory(new PropertyValueFactory<>("loan"));
-        TableColumn<LoanItem, String> dueDateColumn = new TableColumn<>("Due Date");
-        dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
+        TableView<String> table = new TableView<>();
+        TableColumn<LinkedHashMap<String, String>, String> loanColumn = new TableColumn<>("Loan #");
+        loanColumn.setCellValueFactory(new MapValueFactory<>());
+        TableColumn<String, String> dueDateColumn = new TableColumn<>("Due Date");
+        dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("duedate"));
 
         table.getColumns().setAll(loanColumn, dueDateColumn);
 
@@ -384,11 +382,13 @@ public class LibraryApplication extends Application {
         loanColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
         dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
-        // Dummy data
-        ObservableList<LoanItem> data = FXCollections.observableArrayList(
-                new LoanItem("0244L", "02/27/23"),
-                new LoanItem("2389L", "03/25/23")
-        );
+        // Data
+        ArrayList<String> loansAsStrings = new ArrayList<>();
+        for (LinkedHashMap<String, String> loan : setOfLoans) {
+            loansAsStrings.add(String.join(",",loan.values()));
+        }
+
+        ObservableList<String> data = FXCollections.observableArrayList(loansAsStrings);
 
         // Setting the dummy data to the table
         table.setItems(data);
@@ -705,9 +705,8 @@ public class LibraryApplication extends Application {
         filterBar.setAlignment(Pos.CENTER);
 
         ListView<String> studentList = new ListView<>();
-        // Add sample students to list
-        // TODO: (replace with actual data)
-        studentList.getItems().addAll("Student 1", "Student 2", "Student 3");
+        // Add students to list
+        studentList.getItems().addAll(studentController.returnArraySlice("firstName", "lastName"));
         Button addNewStudentButton = new Button("Add New Student");
 
         leftSide.getChildren().addAll(studentListTitleBox, filterBar, studentList, addNewStudentButton);
@@ -1620,36 +1619,5 @@ public class LibraryApplication extends Application {
         // Main VBox containing the title and the main HBox
         VBox mainRightContent = new VBox(10, newDocTitleBox, mainGrid, additionalDocInfo, detailedDocInfo, updateDelBox);
         return mainRightContent;
-    }
-
-    public static class InventoryItem {
-        private final SimpleStringProperty code;
-        private final SimpleStringProperty title;
-
-        public InventoryItem(String code, String title) {
-            this.code = new SimpleStringProperty(code);
-            this.title = new SimpleStringProperty(title);
-        }
-
-        public String getCode() { return code.get(); }
-        public String getTitle() { return title.get(); }
-    }
-
-    public static class LoanItem {
-        private final SimpleStringProperty loan;
-        private final SimpleStringProperty dueDate;
-
-        public LoanItem(String loan, String dueDate) {
-            this.loan = new SimpleStringProperty(loan);
-            this.dueDate = new SimpleStringProperty(dueDate);
-        }
-
-        public String getLoan() {
-            return loan.get();
-        }
-
-        public String getDueDate() {
-            return dueDate.get();
-        }
     }
 }

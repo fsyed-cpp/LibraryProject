@@ -27,12 +27,6 @@ public class CSVController {
             csvData = new ArrayList<LinkedHashMap<String, String>>();
         }
     }
-    public ArrayList<LinkedHashMap<String, String>> getCsvData() {
-        return csvData;
-    }
-    public void setCsvData(ArrayList<LinkedHashMap<String, String>> csvData) {
-        this.csvData = csvData;
-    }
 
     public void UpdateCSV() {
         try {
@@ -52,7 +46,7 @@ public class CSVController {
 
 
     public boolean search(String searchQuery, String keyName) {
-        for (LinkedHashMap<String, String> lines : this.getCsvData()) {
+        for (LinkedHashMap<String, String> lines : this.csvData) {
             if (lines.get(keyName).equals(searchQuery)) {
                 return true;
             }
@@ -63,7 +57,7 @@ public class CSVController {
 
     public String[] returnArraySlice(String... keyNames) {
         ArrayList<String> toRet = new ArrayList<>();
-        for (LinkedHashMap<String, String> lines : this.getCsvData())
+        for (LinkedHashMap<String, String> lines : this.csvData)
             for (String keyName : keyNames)
                 toRet.add(lines.get(keyName));
         return toRet.toArray(new String[0]);
@@ -72,7 +66,7 @@ public class CSVController {
 
     public String searchAndReturnString(String searchQuery, String keyName) {
         int ind = 0;
-        for (LinkedHashMap<String, String> lines : this.getCsvData()) {
+        for (LinkedHashMap<String, String> lines : this.csvData) {
             if (lines.get(keyName).equals(searchQuery)) {
                 return String.join(",", lines.values());
             }
@@ -84,9 +78,9 @@ public class CSVController {
     public ArrayList<LinkedHashMap<String, String>> searchAndReturnSetOfHashMaps(String searchQuery, String keyName) {
         ArrayList<LinkedHashMap<String, String>> validArrays = new ArrayList<>();
         int ind = 0;
-        for (LinkedHashMap<String, String> lines : this.getCsvData()) {
+        for (LinkedHashMap<String, String> lines : this.csvData) {
             if (lines.get(keyName).equals(searchQuery)) {
-                validArrays.add(this.getCsvData().get(ind));
+                validArrays.add(this.csvData.get(ind));
             }
             ind++;
         }
@@ -95,9 +89,9 @@ public class CSVController {
 
     public LinkedHashMap<String, String> searchAndReturnHashMap(String searchQuery, String keyName) {
         int ind = 0;
-        for (LinkedHashMap<String, String> lines : this.getCsvData()) {
+        for (LinkedHashMap<String, String> lines : this.csvData) {
             if (lines.get(keyName).equals(searchQuery)) {
-                return this.getCsvData().get(ind);
+                return this.csvData.get(ind);
             }
             ind++;
         }
@@ -105,10 +99,10 @@ public class CSVController {
     }
 
     public void deleteLine(int ind) {
-        this.getCsvData().remove(ind);
+        this.csvData.remove(ind);
     }
 
     public void addLine(LinkedHashMap<String, String> content) {
-        this.getCsvData().add(content);
+        this.csvData.add(content);
     }
 }
