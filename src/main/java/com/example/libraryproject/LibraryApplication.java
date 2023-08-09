@@ -20,6 +20,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.chrono.ChronoLocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
@@ -367,7 +368,7 @@ public class LibraryApplication extends Application {
         addNewLoanButton.setOnAction(event -> {
             table.getSelectionModel().clearSelection();
             rightSide.getChildren().clear();
-            rightSide.getChildren().setAll(createLoanInformationContent(new LoanItem()));
+            rightSide.getChildren().setAll(createLoanInformationContent(new LoanItem(loans.get(0).getBroncoID())));
         });
 
         VBox buttonBox = new VBox(5, addNewLoanButton);
@@ -501,8 +502,7 @@ public class LibraryApplication extends Application {
         fieldsGrid.addRow(1, new Label("Title"), titleField);
 
         // Requested Days with dropdown
-        ComboBox<String> reqDaysDropdown = new ComboBox<>();
-        reqDaysDropdown.setValue("10");
+        Label reqDaysDropdown = new Label(String.valueOf(-1 * selectedLoan.getloanDate().compareTo(selectedLoan.getDueDate())));
         fieldsGrid.addRow(2, new Label("Requested Days"), reqDaysDropdown);
 
         // Loan Date field
@@ -1850,18 +1850,17 @@ public class LibraryApplication extends Application {
             this.loan = new SimpleStringProperty(loan);
             this.itemID = new SimpleStringProperty(itemID);
             this.broncoID = new SimpleStringProperty(broncoID);
-            String[] splitLoanDate = loanDate.split("/");
-            String[] splitDueDate = dueDate.split("/");
-            this.loanDate = LocalDate.of(Integer.parseInt(splitLoanDate[2]), Integer.parseInt(splitLoanDate[0]), Integer.parseInt(splitLoanDate[1]));
-            this.dueDate = LocalDate.of(Integer.parseInt(splitDueDate[2]), Integer.parseInt(splitDueDate[0]), Integer.parseInt(splitDueDate[1]));
+            DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            this.loanDate = LocalDate.parse(loanDate, dateFormat);
+            this.dueDate = LocalDate.parse(dueDate, dateFormat);
+        }
+
+        public LoanItem(String broncoID) {
+            this("<new, replace me>", "0", broncoID, "2023-08-09", "2023-08-19");
         }
 
         public LoanItem() {
-            this.loan = new SimpleStringProperty("");
-            this.itemID = new SimpleStringProperty("");
-            this.broncoID = new SimpleStringProperty("");
-            this.loanDate = LocalDate.now();
-            this.dueDate = LocalDate.now().plusDays(10);
+            this("<new, replace me>", "0", "", "2023-08-09", "2023-08-19");
         }
 
         public String getLoan() {
