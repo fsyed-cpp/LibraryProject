@@ -1637,16 +1637,15 @@ public class LibraryApplication extends Application {
             return broncoID.get();
         }
 
-        public String getFirstName() {
-            return firstName.get();
-        }
-
-        public String getLastName() {
-            return lastName.get();
-        }
-
-        public String getMajor() {
-            return major.get();
+        public String getFirstName() {            return firstName.get();        }
+        public String getLastName() {            return lastName.get();        }
+        public String getMajor() {            return major.get();        }
+        public String[] getAsStringArr() {
+            return new String[]{
+                    getFirstName(),
+                    getLastName(),
+                    getMajor()
+            };
         }
     }
 
@@ -1660,16 +1659,14 @@ public class LibraryApplication extends Application {
             this.subject = new SimpleStringProperty(subject);
         }
 
-        public String getAuthorname() {
-            return authorname.get();
-        }
+        public String getAuthorname() {            return authorname.get();        }
+        public String getNationality() {            return nationality.get();        }
+        public String getSubject() {            return subject.get();        }
 
-        public String getNationality() {
-            return nationality.get();
-        }
-
-        public String getSubject() {
-            return subject.get();
+        public String[] getAsStringArr() {
+            return new String[]{getAuthorname(),
+                    getNationality(),
+                    getSubject()};
         }
     }
 
@@ -1683,16 +1680,13 @@ public class LibraryApplication extends Application {
             this.subject = new SimpleStringProperty(subject);
         }
 
-        public String getDirectorname() {
-            return directorname.get();
-        }
-
-        public String getNationality() {
-            return nationality.get();
-        }
-
-        public String getSubject() {
-            return subject.get();
+        public String getDirectorname() {            return directorname.get();        }
+        public String getNationality() {            return nationality.get();        }
+        public String getSubject() {            return subject.get();        }
+        public String[] getAsStringArr() {
+            return new String[]{getDirectorname(),
+                    getNationality(),
+                    getSubject()};
         }
     }
 
@@ -1743,6 +1737,21 @@ public class LibraryApplication extends Application {
         public String getlength() { return length.get(); }
         public String getreleasedate() { return releasedate.get(); }
 
+        public String[] getAsStringArr() {
+            return new String[]{getcode(),
+                    gettitle(),
+                    getlocation(),
+                    getdailyprice(),
+                    getcopies(),
+                    getborrowed(),
+                    getoverdue(),
+                    getauthors(),
+                    getpages(),
+                    getpubdate(),
+                    getproducers(),
+                    getlength(),
+                    getreleasedate()};
+        }
     }
 
     public static class LoanItem {
@@ -1779,6 +1788,10 @@ public class LibraryApplication extends Application {
 
         public String getduedate() {
             return dueDate.get();
+        }
+
+        public String[] getAsStringArr() {
+            return new String[]{loan.get(), itemID.get(), broncoID.get(), loanDate.get(), dueDate.get()};
         }
     }
 }
