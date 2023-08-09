@@ -73,13 +73,39 @@ public class LibraryApplication extends Application {
     private Boolean isComprehensiveLoanDetailAdded = false;
 
     private CSVController loanController = new CSVController("data/loans.csv");
+    ArrayList<LoanItem> loans;
     private CSVController itemController = new CSVController("data/items.csv");
+    ArrayList<InventoryItem> items;
     private CSVController studentController = new CSVController("data/students.csv");
+    ArrayList<StudentItem> students;
     private CSVController authorController = new CSVController("data/authors.csv");
+    ArrayList<AuthorItem> authors;
     private CSVController directorController = new CSVController("data/directors.csv");
+    ArrayList<DirectorItem> directors;
 
     @Override
     public void start(Stage primaryStage) {
+        //Init All Fields
+        loans = new ArrayList<>();
+        for (String[] line : loanController.getCsvData().toArray(new String[0][])) {
+            loans.add(new LoanItem(line[0],line[1],line[2],line[3],line[4]));
+        }
+        items = new ArrayList<>();
+        for (String[] line : itemController.getCsvData().toArray(new String[0][])) {
+            items.add(new InventoryItem(line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12]));
+        }
+        students = new ArrayList<>();
+        for (String[] line : studentController.getCsvData().toArray(new String[0][])) {
+            students.add(new StudentItem(line[0],line[1],line[2],line[3]));
+        }
+        authors = new ArrayList<>();
+        for (String[] line : authorController.getCsvData().toArray(new String[0][])) {
+            authors.add(new AuthorItem(line[0],line[1],line[2]));
+        }
+        directors = new ArrayList<>();
+        for (String[] line : directorController.getCsvData().toArray(new String[0][])) {
+            directors.add(new DirectorItem(line[0],line[1],line[2]));
+        }
 
         // Library Management Title
         Label titleLabel = new Label("Library Management");
@@ -178,17 +204,8 @@ public class LibraryApplication extends Application {
 
         // Search button functionality:
         searchButton.setOnAction(event -> {
-            String searchText = searchBar.getText();
-            boolean found = false;
-
-            CSVController loansCSV = new CSVController("path/to/loans.csv");
-            for (String[] lines : loansCSV.getCsvData())
-                for (String line : lines)
-                    if (line.equals(searchText)) {
-                        found = true;
-                        break;
-                    }
-            if (!found) {
+            LoanItem found = searchBroncoIDInLoans(searchBar.getText());
+            if (found == null) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Alert");
                 alert.setHeaderText("Bronco ID not found in database");
@@ -196,7 +213,7 @@ public class LibraryApplication extends Application {
                 alert.showAndWait();
             } else {
                 // Show loan content for the standard tab
-                VBox loanDetailContent = createLoanDetailContent();
+                VBox loanDetailContent = createLoanDetailContent(found);
                 if (!isLoanDetailAdded) {
                     standardMainContent.getChildren().add(loanDetailContent);
                     standardTab.setContent(standardMainContent);
@@ -258,7 +275,32 @@ public class LibraryApplication extends Application {
         return loansContent;
     }
 
-    private VBox createLoanDetailContent() {
+    private LoanItem searchBroncoIDInLoans(String text) {
+        for (LoanItem loan : loans) {
+            if (loan.broncoIDProperty().equals(text))
+                return loan;
+        }
+        return null;
+    }
+
+    private String getNameFromBroncoID(String broncoID) {
+        for (StudentItem student : students) {
+            if (student.broncoID.get().equals(broncoID))
+                return String.join(" ", student.getFirstName(), student.getLastName());
+        }
+        return "<no name>";
+    }
+
+    private ArrayList<LoanItem> getAllLoansForBroncoID(String broncoID) {
+        ArrayList<LoanItem> broncoLoans = new ArrayList<>();
+        for (LoanItem loan : loans)
+            if (loan.broncoIDProperty().equals(broncoID))
+                broncoLoans.add(loan);
+        return broncoLoans;
+    }
+
+
+    private VBox createLoanDetailContent(LoanItem loan) {
         // Left Side
         VBox leftSide = new VBox();
         leftSide.setPadding(new Insets(10));
@@ -275,7 +317,7 @@ public class LibraryApplication extends Application {
         rightSide.setVisible(false);
 
         // Title "<Person Name?"
-        Label titleLabel = new Label("John Smith"); // TODO: Change to actual name
+        Label titleLabel = new Label(getNameFromBroncoID(loan.broncoIDProperty()));
         HBox loanTitleBox = new HBox((titleLabel));
         loanTitleBox.setAlignment(Pos.CENTER);
         titleLabel.setAlignment(Pos.CENTER);
@@ -284,9 +326,9 @@ public class LibraryApplication extends Application {
         // Table for Code and Title
         TableView<LoanItem> table = new TableView<>();
         TableColumn<LoanItem, String> loanColumn = new TableColumn<>("Loan #");
-        loanColumn.setCellValueFactory(new PropertyValueFactory<>("loan"));
+        loanColumn.setCellValueFactory(new PropertyValueFactory<LoanItem, String>("loan"));
         TableColumn<LoanItem, String> dueDateColumn = new TableColumn<>("Due Date");
-        dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
+        dueDateColumn.setCellValueFactory(new PropertyValueFactory<LoanItem, String>("duedate"));
 
         table.getColumns().setAll(loanColumn, dueDateColumn);
 
@@ -295,10 +337,7 @@ public class LibraryApplication extends Application {
         dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
         // data
-        ObservableList<LoanItem> data = FXCollections.observableArrayList();
-        for (String[] line : loanController.getCsvData().toArray(new String[0][])) {
-            data.add(new LoanItem(line[0],line[1],line[2],line[3],line[4]));
-        }
+        ObservableList<LoanItem> data = FXCollections.observableArrayList(getAllLoansForBroncoID(loan.broncoIDProperty()));
 
         // Setting data to the table
         table.setItems(data);
@@ -385,10 +424,8 @@ public class LibraryApplication extends Application {
         dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
         // data
-        ObservableList<LoanItem> data = FXCollections.observableArrayList();
-        for (String[] line : loanController.getCsvData().toArray(new String[0][])) {
-            data.add(new LoanItem(line[0],line[1],line[2],line[3],line[4]));
-        }
+        ObservableList<LoanItem> data = FXCollections.observableArrayList(loans);
+
 
         // Setting data to the table
         table.setItems(data);
@@ -1684,7 +1721,8 @@ public class LibraryApplication extends Application {
         public String getNationality() {            return nationality.get();        }
         public String getSubject() {            return subject.get();        }
         public String[] getAsStringArr() {
-            return new String[]{getDirectorname(),
+            return new String[]{
+                    getDirectorname(),
                     getNationality(),
                     getSubject()};
         }
@@ -1723,34 +1761,35 @@ public class LibraryApplication extends Application {
 
         }
 
-        public String getcode() { return code.get(); }
-        public String gettitle() { return title.get(); }
-        public String getlocation() { return location.get(); }
-        public String getdailyprice() { return dailyprice.get(); }
-        public String getcopies() { return copies.get(); }
-        public String getborrowed() { return borrowed.get(); }
-        public String getoverdue() { return overdue.get(); }
-        public String getauthors() { return authors.get(); }
-        public String getpages() { return pages.get(); }
-        public String getpubdate() { return pubdate.get(); }
-        public String getproducers() { return producers.get(); }
-        public String getlength() { return length.get(); }
-        public String getreleasedate() { return releasedate.get(); }
+        public String getCode() { return code.get(); }
+        public String getTitle() { return title.get(); }
+        public String getLocation() { return location.get(); }
+        public String getDailyPrice() { return dailyprice.get(); }
+        public String getCopies() { return copies.get(); }
+        public String getBorrowed() { return borrowed.get(); }
+        public String getOverdue() { return overdue.get(); }
+        public String getAuthors() { return authors.get(); }
+        public String getPages() { return pages.get(); }
+        public String getPubdate() { return pubdate.get(); }
+        public String getProducers() { return producers.get(); }
+        public String getLength() { return length.get(); }
+        public String getReleasedate() { return releasedate.get(); }
 
         public String[] getAsStringArr() {
-            return new String[]{getcode(),
-                    gettitle(),
-                    getlocation(),
-                    getdailyprice(),
-                    getcopies(),
-                    getborrowed(),
-                    getoverdue(),
-                    getauthors(),
-                    getpages(),
-                    getpubdate(),
-                    getproducers(),
-                    getlength(),
-                    getreleasedate()};
+            return new String[]{
+                    getCode(),
+                    getTitle(),
+                    getLocation(),
+                    getDailyPrice(),
+                    getCopies(),
+                    getBorrowed(),
+                    getOverdue(),
+                    getAuthors(),
+                    getPages(),
+                    getPubdate(),
+                    getProducers(),
+                    getLength(),
+                    getReleasedate()};
         }
     }
 
@@ -1770,23 +1809,23 @@ public class LibraryApplication extends Application {
             this.dueDate = new SimpleStringProperty(dueDate);
         }
 
-        public String getloan() {
+        public String loanProperty() {
             return loan.get();
         }
 
-        public String getitemID() {
+        public String itemIDProperty() {
             return itemID.get();
         }
 
-        public String getbroncoID() {
+        public String broncoIDProperty() {
             return broncoID.get();
         }
 
-        public String getloanDate() {
+        public String loanDateProperty() {
             return loanDate.get();
         }
 
-        public String getduedate() {
+        public String duedateProperty() {
             return dueDate.get();
         }
 
