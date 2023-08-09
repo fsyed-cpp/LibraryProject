@@ -39,4 +39,13 @@ public class CSVController {
             e.printStackTrace();
         }
     }
+
+    public boolean search(String searchQuery) {
+        for (String[] lines : this.getCsvData())
+            for (String line : lines)
+                if (line.equals(searchQuery)) {
+                    return true;
+                }
+        return false;
+    }
 }
