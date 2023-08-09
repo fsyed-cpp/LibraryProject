@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 /*
@@ -744,7 +745,12 @@ public class LibraryApplication extends Application {
         ListView<String> studentList = new ListView<>();
         // Add sample students to list
         // TODO: (replace with actual data)
-        studentList.getItems().addAll("Student 1", "Student 2", "Student 3");
+
+        String[] studentNames = students.stream()
+                .map(StudentItem::getFullName)
+                .toArray(String[]::new);
+
+        studentList.getItems().addAll(studentNames);
         Button addNewStudentButton = new Button("Add New Student");
 
         leftSide.getChildren().addAll(studentListTitleBox, filterBar, studentList, addNewStudentButton);
@@ -902,9 +908,11 @@ public class LibraryApplication extends Application {
         filterBar.setAlignment(Pos.CENTER);
 
         ListView<String> authorList = new ListView<>();
+        String[] authorNames = authors.stream()
+                .map(AuthorItem::getAuthorname)
+                .toArray(String[]::new);
         // Add sample authors to list
-        // TODO: (replace with actual data)
-        authorList.getItems().addAll("Ernest Hemingway");
+        authorList.getItems().addAll(authorNames);
         Button addNewAuthorButton = new Button("Add New Author");
 
         leftSide.getChildren().addAll(authorListTitleBox, filterBar, authorList, addNewAuthorButton);
@@ -1054,8 +1062,10 @@ public class LibraryApplication extends Application {
 
         ListView<String> producerList = new ListView<>();
         // Add sample producers to list
-        // TODO: (replace with actual data)
-        producerList.getItems().addAll("Ernest Hemingway");
+        String[] producerNames = directors.stream()
+                .map(DirectorItem::getDirectorname)
+                .toArray(String[]::new);
+        producerList.getItems().addAll(producerNames);
         Button addNewAuthorButton = new Button("Add New Producer");
 
         leftSide.getChildren().addAll(producerListTitleBox, filterBar, producerList, addNewAuthorButton);
@@ -1676,6 +1686,7 @@ public class LibraryApplication extends Application {
 
         public String getFirstName() {            return firstName.get();        }
         public String getLastName() {            return lastName.get();        }
+        public String getFullName() {            return (firstName.get() + " " +  lastName.get());        }
         public String getMajor() {            return major.get();        }
         public String[] getAsStringArr() {
             return new String[]{
