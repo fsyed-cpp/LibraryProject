@@ -1,0 +1,39 @@
+code,title,location,dailyprice,copies,borrowed,overdue,authors,pages,pubdate,producers,length,releasedate
+123B,The Old Man and the Sea,A1,1,3,2,0,ernest-hemingway,128,09/27/1952,,,
+785B,1984,B3,1,1,0,0,george-orwell,328,06/08/1949,,,
+901B,The Adventures of Tom Sawyer,C2,1,4,1,0,mark-twain,274,06/14/1874,,,
+354B,Pride and Prejudice,D4,1,2,2,0,jane-austen,279,10/28/1817,,,
+628B,The Great Gatsby,A3,1,3,1,1,f.-scott-fitzgerald,180,04/10/1925,,,
+496B,Murder on the Orient Express,B1,1,1,0,0,agatha-christie,256,01/01/1934,,,
+217B,The Shining,C4,1,2,0,0,stephen-king,447,01/28/1977,,,
+392B,Oliver Twist,D2,1,2,0,1,charles-dickens,554,01/01/1837,,,
+563B,War and Peace,A2,1,4,4,0,leo-tolstoy,1225,01/01/1867,,,
+801B,The Picture of Dorian Gray,B4,1,3,0,0,oscar-wilde,272,06/20/1890,,,
+459B,One Hundred Years of Solitude,C3,1,1,1,0,gabriel-garcia-marquez,417,09/05/1967,,,
+302B,The Metamorphosis,D1,1,3,0,1,franz-kafka,55,01/01/1915,,,
+719B,Ulysses,A4,1,4,0,0,james-joyce,730,02/02/1922,,,
+846B,Crime and Punishment,B2,1,2,2,1,fyodor-dostoevsky,671,01/01/1866,,,
+972B,Hamlet,C1,1,1,0,1,william-shakespeare,400,01/01/1603,,,
+635B,The Hobbit,D3,1,4,0,1,j.r.r.-tolkien,310,09/21/1937,,,
+403B,To Kill a Mockingbird,A3,1,3,3,0,harper-lee,281,07/11/1960,,,
+298B,The Catcher in the Rye,B4,1,2,0,0,j.d.-salinger,214,07/16/1951,,,
+514B,I Know Why the Caged Bird Sings,C2,1,4,4,0,maya-angelou,289,04/02/1969,,,
+456D,The Civil War,D1,2,3,2,1,,,,ken-burns,680,09/23/1990
+382D,Weird Weekends,A1,2,1,0,0,,,,louis-theroux,60,02/15/1998
+629D,Fahrenheit 9/11,B2,2,4,1,0,,,,michael-moore,122,05/25/2004
+710D,Enron: The Smartest Guys in the Room,C3,2,2,2,0,,,,alex-gibney,110,04/22/2005
+543D,Grizzly Man,D4,2,3,1,0,,,,werner-herzog,103,09/02/2005
+398D,The Thin Blue Line,A2,2,1,0,0,,,,errol-morris,101,08/25/1988
+276D,Dont Look Back,B3,2,2,0,0,,,,d.a.-pennebaker,96,05/17/1967
+492D,Super Size Me,C1,2,2,0,0,,,,morgan-spurlock,100,01/18/2004
+105D,Last Days in Vietnam,D4,2,4,4,1,,,,rory-kennedy,98,08/28/2014
+731D,Titicut Follies,A3,2,3,0,0,,,,frederick-wiseman,84,10/13/1967
+821D,"Harlan County, USA",B1,2,1,1,0,,,,barbara-kopple,104,03/15/1976
+947D,Grey Gardens,C4,2,3,0,0,,,,albert-maysles,95,09/27/1975
+365D,Hoop Dreams,D2,2,4,0,0,,,,steve-james,170,09/18/1994
+289D,Citizenfour,A2,2,2,2,0,,,,laura-poitras,113,10/24/2014
+604D,Man on Wire,B4,2,1,0,1,,,,james-marsh,94,07/25/2008
+133D,Kurt & Courtney,C3,2,4,0,0,,,,nick-broomfield,95,02/27/1998
+482D,13th,D1,2,3,3,0,,,,ava-duvernay,100,10/07/2016
+951D,"What Happened, Miss Simone?",A4,2,2,0,0,,,,liz-garbus,101,01/26/2015
+317D,The Act of Killing,B2,2,4,4,1,,,,joshua-oppenheimer,159,08/20/2012
