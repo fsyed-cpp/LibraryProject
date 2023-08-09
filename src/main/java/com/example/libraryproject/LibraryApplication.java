@@ -6,21 +6,22 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.chrono.ChronoLocalDate;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 
 /*
 loans.csv:
@@ -205,7 +206,7 @@ public class LibraryApplication extends Application {
 
         // Search button functionality:
         searchButton.setOnAction(event -> {
-            ArrayList<LoanItem> foundLoans = searchBroncoIDInLoans(searchBar.getText());
+            LoanItem foundLoans = searchSingleBroncoIDInLoans(searchBar.getText());
             if (foundLoans == null) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Alert");
@@ -214,7 +215,7 @@ public class LibraryApplication extends Application {
                 alert.showAndWait();
             } else {
                 // Show loan content for the standard tab
-                VBox loanDetailContent = createLoanDetailContent(foundLoans);
+                VBox loanDetailContent = createLoanDetailContent(getAllLoansForBroncoID(searchBar.getText()));
                 if (!isLoanDetailAdded) {
                     standardMainContent.getChildren().add(loanDetailContent);
                     standardTab.setContent(standardMainContent);
@@ -224,7 +225,7 @@ public class LibraryApplication extends Application {
             }
         });
 
-        // Comprehensive button functionality:
+        // TODO: Comprehensive button functionality:
         comprehensiveSearchButton.setOnAction(event -> {
             String searchText = searchBar.getText();
             boolean found = false;
@@ -246,7 +247,7 @@ public class LibraryApplication extends Application {
                 e.printStackTrace();
             }
 
-            // TESTING !!!! REMOVE WHEN WE ADD CSV DATA FOR LOANS !!
+            //TODO: TESTING !!!! REMOVE WHEN WE ADD CSV DATA FOR LOANS !!
             found = true;
 
             if (!found) {
@@ -276,16 +277,11 @@ public class LibraryApplication extends Application {
         return loansContent;
     }
 
-    private ArrayList<LoanItem> searchBroncoIDInLoans(String text) {
-
+    private LoanItem searchSingleBroncoIDInLoans(String text) {
         ArrayList<LoanItem> foundLoans = new ArrayList<LoanItem>();
         for (LoanItem loan : loans) {
-            if (loan.broncoIDProperty().equals(text))
-                foundLoans.add(loan);
-        }
-
-        if (foundLoans.stream().count() > 0) {
-            return foundLoans;
+            if (loan.getBroncoID().equals(text))
+                return loan;
         }
         return null;
     }
@@ -301,7 +297,7 @@ public class LibraryApplication extends Application {
     private ArrayList<LoanItem> getAllLoansForBroncoID(String broncoID) {
         ArrayList<LoanItem> broncoLoans = new ArrayList<>();
         for (LoanItem loan : loans)
-            if (loan.broncoIDProperty().equals(broncoID))
+            if (loan.getBroncoID().equals(broncoID))
                 broncoLoans.add(loan);
         return broncoLoans;
     }
@@ -324,7 +320,7 @@ public class LibraryApplication extends Application {
         rightSide.setVisible(false);
 
         // Title "<Person Name?"
-        Label titleLabel = new Label(getNameFromBroncoID(loans.get(0).broncoIDProperty()));
+        Label titleLabel = new Label(getNameFromBroncoID(loans.get(0).getBroncoID()));
         HBox loanTitleBox = new HBox((titleLabel));
         loanTitleBox.setAlignment(Pos.CENTER);
         titleLabel.setAlignment(Pos.CENTER);
@@ -355,7 +351,7 @@ public class LibraryApplication extends Application {
                         // show loan info
                         rightSide.getChildren().clear();
                         rightSide.setVisible(true);
-                        rightSide.getChildren().setAll(createLoanInformationContent());
+                        rightSide.getChildren().setAll(createLoanInformationContent(newValue));
                     }
                 }
         );
@@ -380,7 +376,7 @@ public class LibraryApplication extends Application {
         leftSide.getChildren().setAll(loanTitleBox, table, buttonBox);
 
         // RIGHT SIDE !!
-        rightSide.getChildren().setAll(createLoanInformationContent());
+        //rightSide.getChildren().setAll(createLoanInformationContent(new LoanItem()));
 
         // Main content layout (with equal widths for left and right sides)
         HBox mainContent = new HBox(leftSide, rightSide);
@@ -443,7 +439,7 @@ public class LibraryApplication extends Application {
                         // show loan info
                         rightSide.getChildren().clear();
                         rightSide.setVisible(true);
-                        rightSide.getChildren().setAll(createLoanInformationContent());
+                        rightSide.getChildren().setAll(createLoanInformationContent(newValue));
                     }
                 }
         );
@@ -468,7 +464,7 @@ public class LibraryApplication extends Application {
         leftSide.getChildren().setAll(loanTitleBox, table, leftVBox);
 
         // RIGHT SIDE !!
-        rightSide.getChildren().setAll(createLoanInformationContent());
+        rightSide.getChildren().setAll(createLoanInformationContent(new LoanItem()));
 
         // Main content layout (with equal widths for left and right sides)
         HBox mainContent = new HBox(leftSide, rightSide);
@@ -481,7 +477,7 @@ public class LibraryApplication extends Application {
         return fullContent;
     }
 
-    private VBox createLoanInformationContent() {
+    private VBox createLoanInformationContent(LoanItem selectedLoan) {
 
         Label loanTitleLabel = new Label("Loan Information");
         HBox loanInfoTitleBox = new HBox((loanTitleLabel));
@@ -495,11 +491,11 @@ public class LibraryApplication extends Application {
         fieldsGrid.setVgap(10);
 
         // Code field
-        TextField codeField = new TextField();
+        TextField codeField = new TextField(selectedLoan.getLoan());
         fieldsGrid.addRow(0, new Label("Code"), codeField);
 
         // Title field
-        TextField titleField = new TextField();
+        TextField titleField = new TextField(GetTitleFromItemID(selectedLoan.getItemID()));
         fieldsGrid.addRow(1, new Label("Title"), titleField);
 
         // Requested Days with dropdown
@@ -508,11 +504,11 @@ public class LibraryApplication extends Application {
         fieldsGrid.addRow(2, new Label("Requested Days"), reqDaysDropdown);
 
         // Loan Date field
-        DatePicker loanDateField = new DatePicker();
+        DatePicker loanDateField = new DatePicker(selectedLoan.getloanDate());
         fieldsGrid.addRow(3, new Label("Loan Date"), loanDateField);
 
         // Due Date field
-        DatePicker dueDateField = new DatePicker();
+        DatePicker dueDateField = new DatePicker(selectedLoan.getDueDate());
         fieldsGrid.addRow(4, new Label("Due Date"), dueDateField);
 
         // Left VBox containing the fields
@@ -524,11 +520,11 @@ public class LibraryApplication extends Application {
         rightFieldsGrid.setVgap(10);
 
         // Daily Price field
-        TextField dailyPriceField = new TextField();
-        rightFieldsGrid.addRow(0, new Label("Due Date"), dailyPriceField);
+        Label dailyPriceLabel = new Label(GetDailyPriceOfItem(selectedLoan.getItemID()));
+        rightFieldsGrid.addRow(0, new Label("Due Date"), dailyPriceLabel);
 
         // Accrued field
-        TextField accruedField = new TextField();
+        Label accruedField = new Label(CalculateAccruedPrice(dailyPriceLabel.getText(), selectedLoan.getloanDate()));
         rightFieldsGrid.addRow(1, new Label("Accrued"), accruedField);
 
         // Fines field
@@ -588,6 +584,26 @@ public class LibraryApplication extends Application {
         VBox mainRightContent = new VBox(10, loanInfoTitleBox, mainGrid, waitlistedOverdueBox, updateDelBox);
 
         return mainRightContent;
+    }
+
+    private String CalculateAccruedPrice(String text, LocalDate value) {
+        float actPrice = Float.parseFloat(text);
+        int daysSince = -1 * value.compareTo(ChronoLocalDate.from(LocalDate.now().atStartOfDay()));
+        return String.valueOf(actPrice * daysSince);
+    }
+
+    private String GetDailyPriceOfItem(String itemID) {
+        for (InventoryItem item : items)
+            if (item.getCode().equals(itemID))
+                return item.getDailyPrice();
+        return null;
+    }
+
+    private String GetTitleFromItemID(String itemID) {
+        for (InventoryItem item : items)
+            if (item.getCode().equals(itemID))
+                return item.getTitle();
+        return null;
     }
 
     private VBox createNewLoanDetailContent() {
@@ -1872,16 +1888,26 @@ public class LibraryApplication extends Application {
         private final SimpleStringProperty loan;
         private final SimpleStringProperty itemID;
         private final SimpleStringProperty broncoID;
-        private final SimpleStringProperty loanDate;
+        private final LocalDate loanDate;
 
-        private final SimpleStringProperty dueDate;
+        private final LocalDate dueDate;
 
         public LoanItem(String loan, String itemID, String broncoID, String loanDate, String dueDate) {
             this.loan = new SimpleStringProperty(loan);
             this.itemID = new SimpleStringProperty(itemID);
             this.broncoID = new SimpleStringProperty(broncoID);
-            this.loanDate = new SimpleStringProperty(loanDate);
-            this.dueDate = new SimpleStringProperty(dueDate);
+            String[] splitLoanDate = loanDate.split("/");
+            String[] splitDueDate = dueDate.split("/");
+            this.loanDate = LocalDate.of(Integer.parseInt(splitLoanDate[2]), Integer.parseInt(splitLoanDate[0]), Integer.parseInt(splitLoanDate[1]));
+            this.dueDate = LocalDate.of(Integer.parseInt(splitDueDate[2]), Integer.parseInt(splitDueDate[0]), Integer.parseInt(splitDueDate[1]));
+        }
+
+        public LoanItem() {
+            this.loan = new SimpleStringProperty("");
+            this.itemID = new SimpleStringProperty("");
+            this.broncoID = new SimpleStringProperty("");
+            this.loanDate = LocalDate.now();
+            this.dueDate = LocalDate.now().plusDays(10);
         }
 
         public String getLoan() {
@@ -1892,24 +1918,20 @@ public class LibraryApplication extends Application {
             return itemID.get();
         }
 
-        public String getDueDate() {
-            return dueDate.get();
-        }
-
-        public String broncoIDProperty() {
+        public String getBroncoID() {
             return broncoID.get();
         }
 
-        public String loanDateProperty() {
-            return loanDate.get();
+        public LocalDate getDueDate() {
+            return dueDate.atStartOfDay().toLocalDate();
         }
 
-        public String duedateProperty() {
-            return dueDate.get();
+        public LocalDate getloanDate() {
+            return loanDate.atStartOfDay().toLocalDate();
         }
 
         public String[] getAsStringArr() {
-            return new String[]{loan.get(), itemID.get(), broncoID.get(), loanDate.get(), dueDate.get()};
+            return new String[]{loan.get(), itemID.get(), broncoID.get(), loanDate.toString(), dueDate.toString()};
         }
     }
 }
