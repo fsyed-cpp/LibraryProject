@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 
 /*
@@ -75,7 +76,6 @@ public class LibraryApplication extends Application {
     private CSVController itemController = new CSVController("data/items.csv");
     private CSVController studentController = new CSVController("data/students.csv");
     private CSVController authorController = new CSVController("data/authors.csv");
-    private CSVController authorgroupController = new CSVController("data/authorgroups.csv");
     private CSVController directorController = new CSVController("data/directors.csv");
 
     @Override
@@ -1202,13 +1202,11 @@ public class LibraryApplication extends Application {
         codeColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
         titleColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
-        // Dummy data
-        ObservableList<InventoryItem> data = FXCollections.observableArrayList(
-                new InventoryItem("C123", "Item 1"),
-                new InventoryItem("C456", "Item 2"),
-                new InventoryItem("C789", "Item 3")
-        );
-
+        // get data from items.csv
+        ObservableList<InventoryItem> data = FXCollections.observableArrayList();
+        for (String[] line : itemController.getCsvData().toArray(new String[0][])) {
+            data.add(new InventoryItem(line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10], line[11], line[12]));
+        }
         // Setting the dummy data to the table
         table.setItems(data);
 
@@ -1625,14 +1623,49 @@ public class LibraryApplication extends Application {
     public static class InventoryItem {
         private final SimpleStringProperty code;
         private final SimpleStringProperty title;
+        private final SimpleStringProperty location;
+        private final SimpleStringProperty dailyprice;
+        private final SimpleStringProperty copies;
+        private final SimpleStringProperty borrowed;
+        private final SimpleStringProperty overdue;
+        private final SimpleStringProperty authors;
+        private final SimpleStringProperty pages;
+        private final SimpleStringProperty pubdate;
+        private final SimpleStringProperty producers;
+        private final SimpleStringProperty length;
+        private final SimpleStringProperty releasedate;
 
-        public InventoryItem(String code, String title) {
+        public InventoryItem(String code, String title, String location, String dailyprice, String copies, String borrowed, String overdue, String authors, String pages, String pubdate, String producers, String length, String releasedate) {
             this.code = new SimpleStringProperty(code);
             this.title = new SimpleStringProperty(title);
+            this.location = new SimpleStringProperty(location);
+            this.dailyprice = new SimpleStringProperty(dailyprice);
+            this.copies = new SimpleStringProperty(copies);
+            this.borrowed = new SimpleStringProperty(borrowed);
+            this.overdue = new SimpleStringProperty(overdue);
+            this.authors = new SimpleStringProperty(authors);
+            this.pages = new SimpleStringProperty(pages);
+            this.pubdate = new SimpleStringProperty(pubdate);
+            this.producers = new SimpleStringProperty(producers);
+            this.length = new SimpleStringProperty(length);
+            this.releasedate = new SimpleStringProperty(releasedate);
+
         }
 
-        public String getCode() { return code.get(); }
-        public String getTitle() { return title.get(); }
+        public String getcode() { return code.get(); }
+        public String gettitle() { return title.get(); }
+        public String getlocation() { return location.get(); }
+        public String getdailyprice() { return dailyprice.get(); }
+        public String getcopies() { return copies.get(); }
+        public String getborrowed() { return borrowed.get(); }
+        public String getoverdue() { return overdue.get(); }
+        public String getauthors() { return authors.get(); }
+        public String getpages() { return pages.get(); }
+        public String getpubdate() { return pubdate.get(); }
+        public String getproducers() { return producers.get(); }
+        public String getlength() { return length.get(); }
+        public String getreleasedate() { return releasedate.get(); }
+
     }
 
     public static class LoanItem {
@@ -1644,11 +1677,11 @@ public class LibraryApplication extends Application {
             this.dueDate = new SimpleStringProperty(dueDate);
         }
 
-        public String getLoan() {
+        public String getloan() {
             return loan.get();
         }
 
-        public String getDueDate() {
+        public String getduedate() {
             return dueDate.get();
         }
     }
