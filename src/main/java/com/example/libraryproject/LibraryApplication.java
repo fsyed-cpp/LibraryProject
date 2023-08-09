@@ -4,6 +4,8 @@ import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -365,7 +367,7 @@ public class LibraryApplication extends Application {
         addNewLoanButton.setOnAction(event -> {
             table.getSelectionModel().clearSelection();
             rightSide.getChildren().clear();
-            rightSide.getChildren().setAll(createNewLoanDetailContent());
+            rightSide.getChildren().setAll(createLoanInformationContent(new LoanItem()));
         });
 
         VBox buttonBox = new VBox(5, addNewLoanButton);
@@ -519,20 +521,20 @@ public class LibraryApplication extends Application {
         rightFieldsGrid.setHgap(5);
         rightFieldsGrid.setVgap(10);
 
-        // Daily Price field
+        // Daily Price
         Label dailyPriceLabel = new Label(GetDailyPriceOfItem(selectedLoan.getItemID()));
         rightFieldsGrid.addRow(0, new Label("Price"), dailyPriceLabel);
 
-        // Accrued field
-        Label accruedField = new Label(CalculateAccruedPrice(dailyPriceLabel.getText(), selectedLoan.getloanDate()));
-        rightFieldsGrid.addRow(1, new Label("Accrued"), accruedField);
+        // Accrued
+        Label accruedLabel = new Label(CalculateAccruedPrice(dailyPriceLabel.getText(), selectedLoan.getloanDate()));
+        rightFieldsGrid.addRow(1, new Label("Accrued"), accruedLabel);
 
-        // Fines field
+        // Fines
         Label finesLabel = new Label(CalculateNumberOfFines(selectedLoan.getDueDate()));
         rightFieldsGrid.addRow(2, new Label("Fines"), finesLabel);
 
-        // Total Due field
-        Label totalDueLabel = new Label(CalculateTotalPrice(accruedField.getText(), dailyPriceLabel.getText(), finesLabel.getText()));
+        // Total Due
+        Label totalDueLabel = new Label(CalculateTotalPrice(accruedLabel.getText(), dailyPriceLabel.getText(), finesLabel.getText()));
         rightFieldsGrid.addRow(3, new Label("Total Due"), totalDueLabel);
 
         VBox rightSideRightVBox = new VBox(rightFieldsGrid);
@@ -544,27 +546,26 @@ public class LibraryApplication extends Application {
         mainGrid.setHgap(80);
 
         // Waitlisted
-        Label waitListedLabel = new Label("Waitlisted");
-        ToggleButton yesButton = new ToggleButton("Yes");
-        ToggleButton noButton = new ToggleButton("No");
-        ToggleGroup waitlistedGroup = new ToggleGroup();
-        yesButton.setToggleGroup(waitlistedGroup);
-        noButton.setToggleGroup(waitlistedGroup);
-        HBox waitlistedButtonBox = new HBox(0, yesButton, noButton);
-        VBox waitlistedBox = new VBox(10.0, waitListedLabel, waitlistedButtonBox);
+        //Label waitListedLabel = new Label("Waitlisted");
+        //ToggleButton yesButton = new ToggleButton("Yes");
+        //ToggleButton noButton = new ToggleButton("No");
+        //ToggleGroup waitlistedGroup = new ToggleGroup();
+        //yesButton.setToggleGroup(waitlistedGroup);
+        //noButton.setToggleGroup(waitlistedGroup);
+        //HBox waitlistedButtonBox = new HBox(0, yesButton, noButton);
+        //VBox waitlistedBox = new VBox(10.0, waitListedLabel, waitlistedButtonBox);
 
         // Overdue
-        Label overdueLabel = new Label("Overdue");
-        ToggleButton yesOverdueButton = new ToggleButton("Yes");
-        ToggleButton noOverdueButton = new ToggleButton("No");
-        ToggleGroup overdueGroup = new ToggleGroup();
-        yesButton.setToggleGroup(overdueGroup);
-        noButton.setToggleGroup(overdueGroup);
-        HBox overdueButtonBox = new HBox(0, yesOverdueButton, noOverdueButton);
-        VBox overdueBox = new VBox(10.0, overdueLabel, overdueButtonBox);
+        Label overdueLabel = new Label();
+
+        if (selectedLoan.getDueDate().isAfter(ChronoLocalDate.from(LocalDate.now().atStartOfDay())))
+            overdueLabel.setText("Overdue? Yes");
+        else
+            overdueLabel.setText("Overdue? No");
+        VBox overdueBox = new VBox(10.0, overdueLabel);
 
         // Combine copies, borrowed/overdue, and waitlisted into hbox
-        HBox waitlistedOverdueBox = new HBox(20, waitlistedBox, overdueBox);
+        HBox waitlistedOverdueBox = new HBox(20, overdueBox);
         waitlistedOverdueBox.setPadding(new Insets(20, 0, 0 ,0));
 
         // Update/Delete Buttons
@@ -620,111 +621,6 @@ public class LibraryApplication extends Application {
         return null;
     }
 
-    private VBox createNewLoanDetailContent() {
-
-        Label loanTitleLabel = new Label("Create Loan");
-        HBox loanInfoTitleBox = new HBox((loanTitleLabel));
-        loanInfoTitleBox.setAlignment(Pos.CENTER);
-        loanTitleLabel.setAlignment(Pos.CENTER);
-        loanTitleLabel.setFont(new Font("Arial", 20));
-
-        // Create a GridPane for the fields
-        GridPane fieldsGrid = new GridPane();
-        fieldsGrid.setHgap(5);
-        fieldsGrid.setVgap(10);
-
-        // Code field
-        TextField codeField = new TextField();
-        fieldsGrid.addRow(0, new Label("Code"), codeField);
-
-        // Title field
-        TextField titleField = new TextField();
-        fieldsGrid.addRow(1, new Label("Title"), titleField);
-
-        // Requested Days with dropdown
-        ComboBox<String> reqDaysDropdown = new ComboBox<>();
-        reqDaysDropdown.setValue("10");
-        fieldsGrid.addRow(2, new Label("Requested Days"), reqDaysDropdown);
-
-        // Loan Date field
-        DatePicker loanDateField = new DatePicker();
-        fieldsGrid.addRow(3, new Label("Loan Date"), loanDateField);
-
-        // Due Date field
-        DatePicker dueDateField = new DatePicker();
-        fieldsGrid.addRow(4, new Label("Due Date"), dueDateField);
-
-        // Left VBox containing the fields
-        VBox rightSideLeftVBox = new VBox(fieldsGrid);
-
-        // rightSideRight VBox
-        GridPane rightFieldsGrid = new GridPane();
-        rightFieldsGrid.setHgap(5);
-        rightFieldsGrid.setVgap(10);
-
-        // Daily Price field
-        TextField dailyPriceField = new TextField();
-        rightFieldsGrid.addRow(0, new Label("Due Date"), dailyPriceField);
-
-        // Accrued field
-        TextField accruedField = new TextField();
-        rightFieldsGrid.addRow(1, new Label("Accrued"), accruedField);
-
-        // Fines field
-        TextField finesField = new TextField();
-        rightFieldsGrid.addRow(2, new Label("Fines"), finesField);
-
-        // Total Due field
-        TextField totalDueField = new TextField();
-        rightFieldsGrid.addRow(3, new Label("Total Due"), totalDueField);
-
-        VBox rightSideRightVBox = new VBox(rightFieldsGrid);
-
-        // GridPane containing left and right sections
-        GridPane mainGrid = new GridPane();
-        mainGrid.add(rightSideLeftVBox, 0, 0);
-        mainGrid.add(rightSideRightVBox, 1, 0);
-        mainGrid.setHgap(80);
-
-        // Waitlisted
-        Label waitListedLabel = new Label("Waitlisted");
-        ToggleButton yesButton = new ToggleButton("Yes");
-        ToggleButton noButton = new ToggleButton("No");
-        ToggleGroup waitlistedGroup = new ToggleGroup();
-        yesButton.setToggleGroup(waitlistedGroup);
-        noButton.setToggleGroup(waitlistedGroup);
-        HBox waitlistedButtonBox = new HBox(0, yesButton, noButton);
-        VBox waitlistedBox = new VBox(10.0, waitListedLabel, waitlistedButtonBox);
-
-        // Overdue
-        Label overdueLabel = new Label("Overdue");
-        ToggleButton yesOverdueButton = new ToggleButton("Yes");
-        ToggleButton noOverdueButton = new ToggleButton("No");
-        ToggleGroup overdueGroup = new ToggleGroup();
-        yesButton.setToggleGroup(overdueGroup);
-        noButton.setToggleGroup(overdueGroup);
-        HBox overdueButtonBox = new HBox(0, yesOverdueButton, noOverdueButton);
-        VBox overdueBox = new VBox(10.0, overdueLabel, overdueButtonBox);
-
-        // Combine copies, borrowed/overdue, and waitlisted into hbox
-        HBox waitlistedOverdueBox = new HBox(20, waitlistedBox, overdueBox);
-        waitlistedOverdueBox.setPadding(new Insets(20, 0, 0 ,0));
-
-        // Create Loan Button
-        Button createLoanButton = new Button("Create Loan");
-        createLoanButton.setPrefWidth(150);
-        createLoanButton.setPrefHeight(100);
-
-        VBox createLoanBox = new VBox(10, createLoanButton);
-        createLoanBox.setAlignment(Pos.BOTTOM_RIGHT);
-
-        // Main VBox containing the title and the main HBox
-        mainGrid.setPadding(new Insets(20, 0 ,0 ,0));
-        VBox mainRightContent = new VBox(10, loanInfoTitleBox, mainGrid, waitlistedOverdueBox, createLoanBox);
-
-        return mainRightContent;
-    }
-
     private VBox createPeopleContent() {
         TabPane subTabs = new TabPane();
         Tab studentsTab = new Tab("Students");
@@ -746,6 +642,36 @@ public class LibraryApplication extends Application {
         return peopleContent;
     }
 
+    private String[] updateStudentListForBroncoID (String broncoID) {
+        ArrayList<StudentItem> newList = new ArrayList<>();
+        for (StudentItem student : students)
+            if (student.getBroncoID().equals(broncoID))
+                newList.add(student);
+        ArrayList<String> newListStrings = new ArrayList<>();
+        for (StudentItem student : newList)
+            newListStrings.add(student.getFullName());
+        return newListStrings.toArray(new String[0]);
+    }
+    private String[] updateStudentListForName (String name) {
+        ArrayList<StudentItem> newList = new ArrayList<>();
+        for (StudentItem student : students)
+            if (student.getFirstName().equals(name) || student.getLastName().equals(name))
+                newList.add(student);
+        ArrayList<String> newListStrings = new ArrayList<>();
+        for (StudentItem student : newList)
+            newListStrings.add(student.getFullName());
+        return newListStrings.toArray(new String[0]);
+    }
+    private String[] updateStudentListForMajor (String major) {
+        ArrayList<StudentItem> newList = new ArrayList<>();
+        for (StudentItem student : students)
+            if (student.getMajor().equals(major))
+                newList.add(student);
+        ArrayList<String> newListStrings = new ArrayList<>();
+        for (StudentItem student : newList)
+            newListStrings.add(student.getFullName());
+        return newListStrings.toArray(new String[0]);
+    }
     private VBox createStudentsContent() {
 
         Label studentManagementLabel = new Label("Student Management");
@@ -768,7 +694,7 @@ public class LibraryApplication extends Application {
         studentListTitleBox.setAlignment(Pos.CENTER);
 
         ComboBox<String> filterDropdown = new ComboBox<>();
-        filterDropdown.getItems().addAll("BroncoID", "Name", "Course");
+        filterDropdown.getItems().addAll("BroncoID", "Name", "Major");
         filterDropdown.setValue("Name"); // Set the default value to "Name"
 
         TextField searchBar = new TextField();
@@ -779,17 +705,31 @@ public class LibraryApplication extends Application {
         filterBar.setAlignment(Pos.CENTER);
 
         ListView<String> studentList = new ListView<>();
-        // Add sample students to list
-        // TODO: (replace with actual data)
 
         String[] studentNames = students.stream()
                 .map(StudentItem::getFullName)
                 .toArray(String[]::new);
 
-        studentList.getItems().addAll(studentNames);
+        filterButton.setOnAction(actionEvent -> {
+            switch (filterDropdown.getSelectionModel().getSelectedItem()) {
+                case "BroncoID":
+                    studentList.getItems().setAll(updateStudentListForBroncoID(searchBar.getText()));
+                    break;
+                case "Name":
+                    studentList.getItems().setAll(updateStudentListForName(searchBar.getText()));
+                    break;
+                case "Major":
+                default:
+                    studentList.getItems().setAll(updateStudentListForMajor(searchBar.getText()));
+                    break;
+            }
+
+        });
+
+        studentList.getItems().setAll(studentNames);
         Button addNewStudentButton = new Button("Add New Student");
 
-        leftSide.getChildren().addAll(studentListTitleBox, filterBar, studentList, addNewStudentButton);
+        leftSide.getChildren().setAll(studentListTitleBox, filterBar, studentList, addNewStudentButton);
 
         // Right side content
         VBox rightSide = new VBox(10);
