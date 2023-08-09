@@ -1620,4 +1620,34 @@ public class LibraryApplication extends Application {
         VBox mainRightContent = new VBox(10, newDocTitleBox, mainGrid, additionalDocInfo, detailedDocInfo, updateDelBox);
         return mainRightContent;
     }
+    public static class InventoryItem {
+        private final SimpleStringProperty code;
+        private final SimpleStringProperty title;
+
+        public InventoryItem(String code, String title) {
+            this.code = new SimpleStringProperty(code);
+            this.title = new SimpleStringProperty(title);
+        }
+
+        public String getCode() { return code.get(); }
+        public String getTitle() { return title.get(); }
+    }
+
+    public static class LoanItem {
+        private final SimpleStringProperty loan;
+        private final SimpleStringProperty dueDate;
+
+        public LoanItem(String loan, String dueDate) {
+            this.loan = new SimpleStringProperty(loan);
+            this.dueDate = new SimpleStringProperty(dueDate);
+        }
+
+        public String getLoan() {
+            return loan.get();
+        }
+
+        public String getDueDate() {
+            return dueDate.get();
+        }
+    }
 }
