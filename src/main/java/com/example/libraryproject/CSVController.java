@@ -11,7 +11,7 @@ public class CSVController {
             BufferedReader br = new BufferedReader(new FileReader(fileString));
             String line;
             while ((line = br.readLine()) != null)
-                csvData.add(line.split(","));
+                csvData.add(line.split(",", -1));
             br.close();
         } catch (IOException e) {
             csvData = new ArrayList<String[]>();
@@ -38,69 +38,6 @@ public class CSVController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public boolean search(String searchQuery) {
-        for (String[] lines : this.getCsvData())
-            for (String line : lines)
-                if (line.equals(searchQuery)) {
-                    return true;
-                }
-        return false;
-    }
-
-    public boolean search(String searchQuery, int index) {
-        for (String[] lines : this.getCsvData())
-            if (lines[index].equals(searchQuery)) {
-                return true;
-            }
-        return false;
-    }
-
-    public String searchAndReturnString(String searchQuery) {
-        int ind = 0;
-        for (String[] lines : this.getCsvData()) {
-            for (String line : lines)
-                if (line.equals(searchQuery)) {
-                    return String.join(",", this.getCsvData().get(ind));
-                }
-            ind++;
-        }
-        return null;
-    }
-
-    public String searchAndReturnString(String searchQuery, int index) {
-        int ind = 0;
-        for (String[] lines : this.getCsvData()) {
-            if (lines[index].equals(searchQuery)) {
-                return String.join(",", this.getCsvData().get(ind));
-            }
-            ind++;
-        }
-        return null;
-    }
-
-    public String[] searchAndReturnStringArray(String searchQuery) {
-        int ind = 0;
-        for (String[] lines : this.getCsvData()) {
-            for (String line : lines)
-                if (line.equals(searchQuery)) {
-                    return this.getCsvData().get(ind);
-                }
-            ind++;
-        }
-        return null;
-    }
-
-    public String[] searchAndReturnStringArray(String searchQuery, int index) {
-        int ind = 0;
-        for (String[] lines : this.getCsvData()) {
-            if (lines[index].equals(searchQuery)) {
-                return this.getCsvData().get(ind);
-            }
-            ind++;
-        }
-        return null;
     }
 
     public void deleteLine(int ind) {
