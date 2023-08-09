@@ -48,4 +48,28 @@ public class CSVController {
                 }
         return false;
     }
+
+    public String searchAndReturnString(String searchQuery) {
+        int ind = 0;
+        for (String[] lines : this.getCsvData()) {
+            for (String line : lines)
+                if (line.equals(searchQuery)) {
+                    return String.join(",", this.getCsvData().get(ind));
+                }
+            ind++;
+        }
+        return null;
+    }
+
+    public String[] searchAndReturnStringArray(String searchQuery) {
+        int ind = 0;
+        for (String[] lines : this.getCsvData()) {
+            for (String line : lines)
+                if (line.equals(searchQuery)) {
+                    return this.getCsvData().get(ind);
+                }
+            ind++;
+        }
+        return null;
+    }
 }
