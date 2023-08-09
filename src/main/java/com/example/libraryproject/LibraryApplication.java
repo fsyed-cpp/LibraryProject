@@ -294,13 +294,13 @@ public class LibraryApplication extends Application {
         loanColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
         dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
-        // Dummy data
-        ObservableList<LoanItem> data = FXCollections.observableArrayList(
-                new LoanItem("0244L", "02/27/23"),
-                new LoanItem("2389L", "03/25/23")
-        );
+        // data
+        ObservableList<LoanItem> data = FXCollections.observableArrayList();
+        for (String[] line : loanController.getCsvData().toArray(new String[0][])) {
+            data.add(new LoanItem(line[0],line[1],line[2],line[3],line[4]));
+        }
 
-        // Setting the dummy data to the table
+        // Setting data to the table
         table.setItems(data);
 
         table.getSelectionModel().selectedItemProperty().addListener(
@@ -384,13 +384,13 @@ public class LibraryApplication extends Application {
         loanColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
         dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
-        // Dummy data
-        ObservableList<LoanItem> data = FXCollections.observableArrayList(
-                new LoanItem("0244L", "02/27/23"),
-                new LoanItem("2389L", "03/25/23")
-        );
+        // data
+        ObservableList<LoanItem> data = FXCollections.observableArrayList();
+        for (String[] line : loanController.getCsvData().toArray(new String[0][])) {
+            data.add(new LoanItem(line[0],line[1],line[2],line[3],line[4]));
+        }
 
-        // Setting the dummy data to the table
+        // Setting data to the table
         table.setItems(data);
 
         table.getSelectionModel().selectedItemProperty().addListener(
@@ -1620,6 +1620,83 @@ public class LibraryApplication extends Application {
         return mainRightContent;
     }
 
+    public static class StudentItem {
+        private final SimpleStringProperty broncoID;
+        private final SimpleStringProperty firstName;
+        private final SimpleStringProperty lastName;
+        private final SimpleStringProperty major;
+
+        public StudentItem(String broncoID, String firstName, String lastName, String major) {
+            this.broncoID = new SimpleStringProperty(broncoID);
+            this.firstName = new SimpleStringProperty(firstName);
+            this.lastName = new SimpleStringProperty(lastName);
+            this.major = new SimpleStringProperty(major);
+        }
+
+        public String getBroncoID() {
+            return broncoID.get();
+        }
+
+        public String getFirstName() {
+            return firstName.get();
+        }
+
+        public String getLastName() {
+            return lastName.get();
+        }
+
+        public String getMajor() {
+            return major.get();
+        }
+    }
+
+    public static class AuthorItem {
+        private final SimpleStringProperty authorname;
+        private final SimpleStringProperty nationality;
+        private final SimpleStringProperty subject;
+        AuthorItem(String authorname,String nationality,String subject) {
+            this.authorname = new SimpleStringProperty(authorname);
+            this.nationality = new SimpleStringProperty(nationality);
+            this.subject = new SimpleStringProperty(subject);
+        }
+
+        public String getAuthorname() {
+            return authorname.get();
+        }
+
+        public String getNationality() {
+            return nationality.get();
+        }
+
+        public String getSubject() {
+            return subject.get();
+        }
+    }
+
+    public static class DirectorItem {
+        private final SimpleStringProperty directorname;
+        private final SimpleStringProperty nationality;
+        private final SimpleStringProperty subject;
+        DirectorItem(String directorname,String nationality,String subject) {
+            this.directorname = new SimpleStringProperty(directorname);
+            this.nationality = new SimpleStringProperty(nationality);
+            this.subject = new SimpleStringProperty(subject);
+        }
+
+        public String getDirectorname() {
+            return directorname.get();
+        }
+
+        public String getNationality() {
+            return nationality.get();
+        }
+
+        public String getSubject() {
+            return subject.get();
+        }
+    }
+
+
     public static class InventoryItem {
         private final SimpleStringProperty code;
         private final SimpleStringProperty title;
@@ -1670,15 +1747,34 @@ public class LibraryApplication extends Application {
 
     public static class LoanItem {
         private final SimpleStringProperty loan;
+        private final SimpleStringProperty itemID;
+        private final SimpleStringProperty broncoID;
+        private final SimpleStringProperty loanDate;
+
         private final SimpleStringProperty dueDate;
 
-        public LoanItem(String loan, String dueDate) {
+        public LoanItem(String loan, String itemID, String broncoID, String loanDate, String dueDate) {
             this.loan = new SimpleStringProperty(loan);
+            this.itemID = new SimpleStringProperty(itemID);
+            this.broncoID = new SimpleStringProperty(broncoID);
+            this.loanDate = new SimpleStringProperty(loanDate);
             this.dueDate = new SimpleStringProperty(dueDate);
         }
 
         public String getloan() {
             return loan.get();
+        }
+
+        public String getitemID() {
+            return itemID.get();
+        }
+
+        public String getbroncoID() {
+            return broncoID.get();
+        }
+
+        public String getloanDate() {
+            return loanDate.get();
         }
 
         public String getduedate() {
