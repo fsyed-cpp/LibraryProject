@@ -799,11 +799,28 @@ public class LibraryApplication extends Application {
         // Add a listener to the author list to show the right side when an author is selected
         studentList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
+
+                // Find selected student
+                StudentItem foundStudent = null;
+                for (StudentItem studentItem : students) {
+                    if (studentItem.getFullName().equals(newValue)) {
+                        foundStudent = studentItem;
+                        break;
+                    }
+                }
+
                 rightSide.setVisible(true);
                 rightSide.getChildren().clear();
                 rightSide.getChildren().addAll(studentTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
                         broncoIdLabel, broncoIdField, courseBox, buttonContainer);
+
                 // Populate fields based on the selected student here
+                if (foundStudent != null) {
+                    firstNameField.setText(foundStudent.getFirstName());
+                    lastNameField.setText(foundStudent.getLastName());
+                    broncoIdField.setText(foundStudent.getBroncoID());
+                    courseDropdown.setValue(foundStudent.getMajor());
+                }
             }
         });
 
@@ -960,7 +977,27 @@ public class LibraryApplication extends Application {
                 rightSide.getChildren().clear();
                 rightSide.getChildren().addAll(authorTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
                         nationalityLabel, nationalityField, subjectLabel, subjectField, buttonContainer);
-                // Populate fields based on the selected student here
+
+                // Find selected author
+                AuthorItem foundAuthor = null;
+                for (AuthorItem authorItem : authors) {
+                    if (authorItem.getAuthorname().equals(newValue)) {
+                        foundAuthor = authorItem;
+                        break;
+                    }
+                }
+
+                // Populate fields based on the selected author here
+                if (foundAuthor != null) {
+                    String[] fullName = foundAuthor.getAuthorname().split("-", 2);
+                    String firstName = fullName[0];
+                    String lastName = fullName[1];
+
+                    firstNameField.setText(firstName);
+                    lastNameField.setText(lastName);
+                    nationalityField.setText(foundAuthor.getNationality());
+                    subjectField.setText(foundAuthor.getSubject());
+                }
             }
         });
 
@@ -1106,14 +1143,35 @@ public class LibraryApplication extends Application {
         rightSide.getChildren().addAll(producerTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
                 nationalityLabel, nationalityField, styleLabel, styleField, buttonContainer);
 
-        // Add a listener to the author list to show the right side when an author is selected
+        // Add a listener to the author list to show the right side when a producer is selected
         producerList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 rightSide.setVisible(true);
                 rightSide.getChildren().clear();
                 rightSide.getChildren().addAll(producerTitleBox, firstNameLabel, firstNameField, lastNameLabel, lastNameField,
                         nationalityLabel, nationalityField, styleLabel, styleField, buttonContainer);
-                // Populate fields based on the selected student here
+
+                // Populate fields based on the selected producer here
+                // Find selected author
+                DirectorItem foundProducer = null;
+                for (DirectorItem producerItem : directors) {
+                    if (producerItem.getDirectorname().equals(newValue)) {
+                        foundProducer = producerItem;
+                        break;
+                    }
+                }
+
+                // Populate fields based on the selected author here
+                if (foundProducer != null) {
+                    String[] fullName = foundProducer.getDirectorname().split("-", 2);
+                    String firstName = fullName[0];
+                    String lastName = fullName[1];
+
+                    firstNameField.setText(firstName);
+                    lastNameField.setText(lastName);
+                    nationalityField.setText(foundProducer.getNationality());
+                    styleField.setText(foundProducer.getSubject());
+                }
             }
         });
 
