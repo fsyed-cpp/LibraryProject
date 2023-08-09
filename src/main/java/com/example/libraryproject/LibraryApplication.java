@@ -72,7 +72,7 @@ public class LibraryApplication extends Application {
     private Boolean isLoanDetailAdded = false;
     private Boolean isComprehensiveLoanDetailAdded = false;
 
-    private CSVController loanCSV = new CSVController("data/loans.csv", new String[]{"loanID", "itemID", "broncoID", "loandate", "duedate"});
+    private CSVController loanController = new CSVController("data/loans.csv", new String[]{"loanID", "itemID", "broncoID", "loandate", "duedate"});
     private CSVController itemController = new CSVController("data/items.csv", new String[]{"code","title","location","dailyprice","copies","borrowed","overdue","authors","pages","pubdate","producers","length","releasedate"});
     private CSVController studentController = new CSVController("data/students.csv", new String[]{"broncoID","firstName","lastName","major"});
     private CSVController authorController = new CSVController("data/authors.csv", new String[]{"authorname","nationality","subject"});
