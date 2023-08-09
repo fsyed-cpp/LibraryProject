@@ -205,8 +205,8 @@ public class LibraryApplication extends Application {
 
         // Search button functionality:
         searchButton.setOnAction(event -> {
-            LoanItem found = searchBroncoIDInLoans(searchBar.getText());
-            if (found == null) {
+            ArrayList<LoanItem> foundLoans = searchBroncoIDInLoans(searchBar.getText());
+            if (foundLoans == null) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Alert");
                 alert.setHeaderText("Bronco ID not found in database");
@@ -214,7 +214,7 @@ public class LibraryApplication extends Application {
                 alert.showAndWait();
             } else {
                 // Show loan content for the standard tab
-                VBox loanDetailContent = createLoanDetailContent(found);
+                VBox loanDetailContent = createLoanDetailContent(foundLoans);
                 if (!isLoanDetailAdded) {
                     standardMainContent.getChildren().add(loanDetailContent);
                     standardTab.setContent(standardMainContent);
@@ -276,10 +276,16 @@ public class LibraryApplication extends Application {
         return loansContent;
     }
 
-    private LoanItem searchBroncoIDInLoans(String text) {
+    private ArrayList<LoanItem> searchBroncoIDInLoans(String text) {
+
+        ArrayList<LoanItem> foundLoans = new ArrayList<LoanItem>();
         for (LoanItem loan : loans) {
             if (loan.broncoIDProperty().equals(text))
-                return loan;
+                foundLoans.add(loan);
+        }
+
+        if (foundLoans.stream().count() > 0) {
+            return foundLoans;
         }
         return null;
     }
@@ -301,7 +307,7 @@ public class LibraryApplication extends Application {
     }
 
 
-    private VBox createLoanDetailContent(LoanItem loan) {
+    private VBox createLoanDetailContent(ArrayList<LoanItem> loans) {
         // Left Side
         VBox leftSide = new VBox();
         leftSide.setPadding(new Insets(10));
@@ -318,7 +324,7 @@ public class LibraryApplication extends Application {
         rightSide.setVisible(false);
 
         // Title "<Person Name?"
-        Label titleLabel = new Label(getNameFromBroncoID(loan.broncoIDProperty()));
+        Label titleLabel = new Label(getNameFromBroncoID(loans.get(0).broncoIDProperty()));
         HBox loanTitleBox = new HBox((titleLabel));
         loanTitleBox.setAlignment(Pos.CENTER);
         titleLabel.setAlignment(Pos.CENTER);
@@ -329,7 +335,7 @@ public class LibraryApplication extends Application {
         TableColumn<LoanItem, String> loanColumn = new TableColumn<>("Loan #");
         loanColumn.setCellValueFactory(new PropertyValueFactory<LoanItem, String>("loan"));
         TableColumn<LoanItem, String> dueDateColumn = new TableColumn<>("Due Date");
-        dueDateColumn.setCellValueFactory(new PropertyValueFactory<LoanItem, String>("duedate"));
+        dueDateColumn.setCellValueFactory(new PropertyValueFactory<LoanItem, String>("dueDate"));
 
         table.getColumns().setAll(loanColumn, dueDateColumn);
 
@@ -338,7 +344,7 @@ public class LibraryApplication extends Application {
         dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
         // data
-        ObservableList<LoanItem> data = FXCollections.observableArrayList(getAllLoansForBroncoID(loan.broncoIDProperty()));
+        ObservableList<LoanItem> data = FXCollections.observableArrayList(loans);
 
         // Setting data to the table
         table.setItems(data);
@@ -1878,12 +1884,16 @@ public class LibraryApplication extends Application {
             this.dueDate = new SimpleStringProperty(dueDate);
         }
 
-        public String loanProperty() {
+        public String getLoan() {
             return loan.get();
         }
 
-        public String itemIDProperty() {
+        public String getItemID() {
             return itemID.get();
+        }
+
+        public String getDueDate() {
+            return dueDate.get();
         }
 
         public String broncoIDProperty() {
