@@ -18,10 +18,12 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Date;
 
 public class LibraryApplication extends Application {
 
     private Boolean isLoanDetailAdded = false;
+    private Boolean isComprehensiveLoanDetailAdded = false;
 
     @Override
     public void start(Stage primaryStage) {
@@ -54,6 +56,8 @@ public class LibraryApplication extends Application {
         VBox contentArea = new VBox(); // This will hold the content for the selected toggle menu button
         menuGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             contentArea.getChildren().clear();
+            isLoanDetailAdded = false;
+            isComprehensiveLoanDetailAdded = false;
             if (newValue == loansCTA) {
                 contentArea.getChildren().add(createLoansContent());
             } else if (newValue == peopleCTA) {
@@ -149,6 +153,49 @@ public class LibraryApplication extends Application {
             }
         });
 
+        // Comprehensive button functionality:
+        comprehensiveSearchButton.setOnAction(event -> {
+            String searchText = searchBar.getText();
+            boolean found = false;
+            String line;
+
+            try (BufferedReader br = new BufferedReader(new FileReader("path/to/loans.csv"))) {
+                while ((line = br.readLine()) != null) {
+                    // Split the line by comma and check if it contains the search text
+                    String[] values = line.split(",");
+                    for (String value : values) {
+                        if (value.equals(searchText)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // TESTING !!!! REMOVE WHEN WE ADD CSV DATA FOR LOANS !!
+            found = true;
+
+            if (!found) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Alert");
+                alert.setHeaderText("Bronco ID not found in database");
+                alert.setContentText("Please check to make sure the ID is correct");
+                alert.showAndWait();
+            } else {
+                // Show loan content for the comprehensive tab
+                VBox comprehensiveLoansDetailContent = createComprehensiveLoanDetailContent();
+                if (!isComprehensiveLoanDetailAdded) {
+                    comprehensiveMainContent.getChildren().add(comprehensiveLoansDetailContent);
+                    comprehensiveTab.setContent(comprehensiveMainContent);
+                    tabPane.getTabs().addAll(comprehensiveTab);
+                    isComprehensiveLoanDetailAdded = true;
+                }
+            }
+        });
+
         standardTab.setContent(standardMainContent);
         comprehensiveTab.setContent(comprehensiveMainContent);
         tabPane.getTabs().addAll(standardTab, comprehensiveTab);
@@ -232,6 +279,96 @@ public class LibraryApplication extends Application {
         buttonBox.setPrefHeight(100);
 
         leftSide.getChildren().setAll(loanTitleBox, table, buttonBox);
+
+        // RIGHT SIDE !!
+        rightSide.getChildren().setAll(createLoanInformationContent());
+
+        // Main content layout (with equal widths for left and right sides)
+        HBox mainContent = new HBox(leftSide, rightSide);
+        mainContent.setSpacing(20); // Spacing between left and right sides
+        mainContent.setPadding(new Insets(25));
+
+        // Combining the search area with the main content
+        VBox fullContent = new VBox(10, mainContent);
+
+        return fullContent;
+    }
+
+    private VBox createComprehensiveLoanDetailContent() {
+
+        // Left Side
+        VBox leftSide = new VBox();
+        leftSide.setPadding(new Insets(10));
+        leftSide.setSpacing(10);
+        leftSide.setStyle("-fx-background-color: lightgray;");
+        leftSide.setPrefWidth(300);
+
+        // Right Side
+        VBox rightSide = new VBox();
+        rightSide.setPadding(new Insets(10));
+        rightSide.setSpacing(10);
+        rightSide.setStyle("-fx-background-color: lightgray;");
+        rightSide.setPrefWidth(600);
+        rightSide.setVisible(false);
+
+        // Title
+        Label titleLabel = new Label("Active Loans");
+        HBox loanTitleBox = new HBox((titleLabel));
+        loanTitleBox.setAlignment(Pos.CENTER);
+        titleLabel.setAlignment(Pos.CENTER);
+        titleLabel.setFont(new Font("Arial", 20)); // Set the font size
+
+        // Table for Code and Title
+        TableView<LoanItem> table = new TableView<>();
+        TableColumn<LoanItem, String> loanColumn = new TableColumn<>("Loan #");
+        loanColumn.setCellValueFactory(new PropertyValueFactory<>("loan"));
+        TableColumn<LoanItem, String> dueDateColumn = new TableColumn<>("Due Date");
+        dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
+
+        table.getColumns().setAll(loanColumn, dueDateColumn);
+
+        // Set the columns to take up equal space
+        loanColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
+        dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
+
+        // Dummy data
+        ObservableList<LoanItem> data = FXCollections.observableArrayList(
+                new LoanItem("0244L", "02/27/23"),
+                new LoanItem("2389L", "03/25/23")
+        );
+
+        // Setting the dummy data to the table
+        table.setItems(data);
+
+        table.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    if (newValue != null) {
+                        // show loan info
+                        rightSide.getChildren().clear();
+                        rightSide.setVisible(true);
+                        rightSide.getChildren().setAll(createLoanInformationContent());
+                    }
+                }
+        );
+
+        // Checkbox filters
+        DatePicker dueBeforeField = new DatePicker();
+        dueBeforeField.setPrefWidth(100);
+        DatePicker dueAfterField = new DatePicker();
+        dueAfterField.setPrefWidth(100);
+
+        HBox dueBeforeBox = new HBox(15, new CheckBox("Due Before"), dueBeforeField);
+        HBox dueAfterBox = new HBox(24, new CheckBox("Due After"), dueAfterField);
+        CheckBox overdueBox = new CheckBox("Overdue");
+
+        // VBox for the left side with the checkboxes
+        VBox leftVBox = new VBox(5, dueBeforeBox, dueAfterBox, overdueBox);
+        leftVBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Define a specific width for the left VBox
+        leftVBox.setPrefWidth(150);
+
+        leftSide.getChildren().setAll(loanTitleBox, table, leftVBox);
 
         // RIGHT SIDE !!
         rightSide.getChildren().setAll(createLoanInformationContent());
@@ -979,6 +1116,7 @@ public class LibraryApplication extends Application {
         rightSide.setSpacing(10);
         rightSide.setStyle("-fx-background-color: lightgray;");
         rightSide.setPrefWidth(600);
+        rightSide.setVisible(false);
 
         // Title "Inventory"
         Label titleLabel = new Label("Inventory");
@@ -1000,6 +1138,9 @@ public class LibraryApplication extends Application {
                 (observable, oldValue, newValue) -> {
                     if (newValue != null) {
                         System.out.println("Selected item: " + newValue);
+                        rightSide.getChildren().clear();
+                        rightSide.setVisible(true);
+                        rightSide.getChildren().setAll(createViewBookContent());
                     }
                 }
         );
@@ -1035,13 +1176,52 @@ public class LibraryApplication extends Application {
         newItemButton.setPrefHeight(50);
         newItemButton.setPrefWidth(90);
 
-        // HBox for the entire lower part
-        HBox lowerHBox = new HBox(10, leftVBox, newItemButton);
+        // Book / Document Add
+        Label addNew = new Label("Add New:");
+        Button bookButton = new Button("Book");
+        bookButton.setOnAction(event -> {
+            table.getSelectionModel().clearSelection();
+            rightSide.getChildren().clear();
+            rightSide.setVisible(true);
+            rightSide.getChildren().setAll(createAddBookContent());
+        });
 
+        Button documentButton = new Button("Docu.");
+        documentButton.setOnAction(event -> {
+            table.getSelectionModel().clearSelection();
+            rightSide.getChildren().clear();
+            rightSide.setVisible(true);
+            rightSide.getChildren().setAll(createAddDocumentaryContent());
+        });
+
+        HBox bookDocBox = new HBox(10, bookButton, documentButton);
+        VBox addNewBox = new VBox(15, addNew, bookDocBox);
+
+        HBox lowerHBox = new HBox(10, leftVBox, newItemButton);
+        newItemButton.setOnAction(event -> {
+            HBox newLowerHBox = new HBox(10, leftVBox, addNewBox);
+            leftSide.getChildren().setAll(inventoryTitleBox, table, newLowerHBox);
+        });
+
+        // HBox for the entire lower part
         leftSide.getChildren().setAll(inventoryTitleBox, table, lowerHBox);
 
-        // RIGHT SIDE !!
+        rightSide.getChildren().setAll(createViewBookContent());
 
+        // Main content layout (with equal widths for left and right sides)
+        HBox mainContent = new HBox(leftSide, rightSide);
+        mainContent.setSpacing(20); // Spacing between left and right sides
+        mainContent.setPadding(new Insets(25));
+
+        // Combining the search area with the main content
+        VBox fullContent = new VBox(10, searchArea, mainContent);
+        fullContent.setPadding(new Insets(20));
+
+        return fullContent;
+    }
+
+    private VBox createViewBookContent() {
+        // RIGHT SIDE !!
         Label buttonTitleLabel = new Label("Book");
         HBox buttonTitleBox = new HBox((buttonTitleLabel));
         buttonTitleBox.setAlignment(Pos.CENTER);
@@ -1165,18 +1345,228 @@ public class LibraryApplication extends Application {
 
         // Main VBox containing the title and the main HBox
         VBox mainRightContent = new VBox(10, buttonTitleBox, mainGrid, additionalBookInfo, detailedBookInfo, updateDelBox);
-        rightSide.getChildren().setAll(mainRightContent);
+        return mainRightContent;
+    }
 
-        // Main content layout (with equal widths for left and right sides)
-        HBox mainContent = new HBox(leftSide, rightSide);
-        mainContent.setSpacing(20); // Spacing between left and right sides
-        mainContent.setPadding(new Insets(25));
+    private VBox createAddBookContent() {
 
-        // Combining the search area with the main content
-        VBox fullContent = new VBox(10, searchArea, mainContent);
-        fullContent.setPadding(new Insets(20));
+        Label newBookTitleLabel = new Label("Add New Book");
+        HBox newBookTitleBox = new HBox((newBookTitleLabel));
+        newBookTitleBox.setAlignment(Pos.CENTER);
+        newBookTitleLabel.setAlignment(Pos.CENTER);
+        newBookTitleLabel.setFont(new Font("Arial", 20));
 
-        return fullContent;
+        // Create a GridPane for the fields
+        GridPane fieldsGrid = new GridPane();
+        fieldsGrid.setHgap(5);
+        fieldsGrid.setVgap(10);
+
+        // Code field
+        TextField codeField = new TextField();
+        fieldsGrid.addRow(0, new Label("Code"), codeField);
+
+        // Title field
+        TextField titleField = new TextField();
+        fieldsGrid.addRow(1, new Label("Title"), titleField);
+
+        // Location field
+        TextField locationField = new TextField();
+        fieldsGrid.addRow(2, new Label("Location"), locationField);
+
+        // Price/D field with dropdown
+        ComboBox<String> priceDropdown = new ComboBox<>();
+        priceDropdown.setValue("$1.20");
+        // You can add items to the dropdown here
+        fieldsGrid.addRow(3, new Label("Price/D"), priceDropdown);
+
+        // Left VBox containing the fields
+        VBox rightSideLeftVBox = new VBox(fieldsGrid);
+
+        // Authors list
+        ListView<String> authorsList = new ListView<>();
+        authorsList.setPrefHeight(100);
+        // add authors here...
+
+        // + and - buttons
+        Button addButton = new Button("+");
+        Button removeButton = new Button("-");
+        // HBox for + and - buttons
+        HBox authorButtonsHBox = new HBox(5, addButton, removeButton);
+        authorButtonsHBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // VBox for authors list and buttons
+        VBox authorsVBox = new VBox(5, new Label("Authors"), authorsList, authorButtonsHBox);
+        authorsVBox.setPadding(new Insets(-5));
+
+        // GridPane containing left and right sections
+        GridPane mainGrid = new GridPane();
+        mainGrid.add(rightSideLeftVBox, 0, 0);
+        mainGrid.add(authorsVBox, 1, 0);
+        mainGrid.setHgap(110);
+
+        // Create The Book Info section
+        Label pagesLabel = new Label("Pages");
+        TextField pagesTextField = new TextField();
+        pagesTextField.setPrefWidth(100);
+
+        Label pubDateLabel = new Label("Pub Date");
+        DatePicker pubDateField = new DatePicker();
+        pubDateField.setPrefWidth(120);
+
+        Label publisherLabel = new Label("Publisher");
+        TextField publisherTextField = new TextField();
+
+        HBox firstHBox = new HBox(10, pagesLabel, pagesTextField, pubDateLabel, pubDateField, publisherLabel, publisherTextField);
+        firstHBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Second HBox
+        Label descriptionLabel = new Label("Description");
+        TextField descriptionTextField = new TextField();
+        descriptionTextField.setMaxWidth(Double.MAX_VALUE);
+
+        HBox secondHBox = new HBox(10, descriptionLabel, descriptionTextField);
+        secondHBox.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(descriptionTextField, Priority.ALWAYS);
+
+        // Main VBox
+        VBox additionalBookInfo = new VBox(10, firstHBox, secondHBox);
+        additionalBookInfo.setPadding(new Insets(50, 0, 0 ,0));
+
+        // Copies
+        Label copiesLabel = new Label("Copies");
+        ComboBox<String> copiesDropdown = new ComboBox<>();
+        copiesDropdown.getItems().addAll("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
+        copiesDropdown.setValue("3");
+        VBox copies = new VBox(10, copiesLabel, copiesDropdown);
+
+        // Combine copies, borrowed/overdue, and waitlisted into hbox
+        HBox detailedBookInfo = new HBox(20, copies);
+        detailedBookInfo.setPadding(new Insets(50, 0, 0 ,0));
+
+        // Update/Delete Buttons
+        Button addNewItemButton = new Button("Add New Item");
+        addNewItemButton.setPrefWidth(150);
+        addNewItemButton.setPrefHeight(80);
+
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setPrefWidth(70);
+        cancelButton.setPrefHeight(80);
+
+        HBox updateDelBox = new HBox(10, addNewItemButton, cancelButton);
+        updateDelBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // Main VBox containing the title and the main HBox
+        VBox mainRightContent = new VBox(10, newBookTitleBox, mainGrid, additionalBookInfo, detailedBookInfo, updateDelBox);
+        return mainRightContent;
+    }
+
+    private VBox createAddDocumentaryContent() {
+
+        Label newDocTitleLabel = new Label("Add New Documentary");
+        HBox newDocTitleBox = new HBox((newDocTitleLabel));
+        newDocTitleBox.setAlignment(Pos.CENTER);
+        newDocTitleLabel.setAlignment(Pos.CENTER);
+        newDocTitleLabel.setFont(new Font("Arial", 20));
+
+        // Create a GridPane for the fields
+        GridPane fieldsGrid = new GridPane();
+        fieldsGrid.setHgap(5);
+        fieldsGrid.setVgap(10);
+
+        // Code field
+        TextField codeField = new TextField();
+        fieldsGrid.addRow(0, new Label("Code"), codeField);
+
+        // Title field
+        TextField titleField = new TextField();
+        fieldsGrid.addRow(1, new Label("Title"), titleField);
+
+        // Location field
+        TextField locationField = new TextField();
+        fieldsGrid.addRow(2, new Label("Location"), locationField);
+
+        // Price/D field with dropdown
+        ComboBox<String> priceDropdown = new ComboBox<>();
+        priceDropdown.setValue("$1.20");
+        // You can add items to the dropdown here
+        fieldsGrid.addRow(3, new Label("Price/D"), priceDropdown);
+
+        // Left VBox containing the fields
+        VBox rightSideLeftVBox = new VBox(fieldsGrid);
+
+        // Authors list
+        ListView<String> authorsList = new ListView<>();
+        authorsList.setPrefHeight(100);
+        // add authors here...
+
+        // + and - buttons
+        Button addButton = new Button("+");
+        Button removeButton = new Button("-");
+        // HBox for + and - buttons
+        HBox authorButtonsHBox = new HBox(5, addButton, removeButton);
+        authorButtonsHBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // VBox for directors list and buttons
+        VBox directorsVBox = new VBox(5, new Label("Directors"), authorsList, authorButtonsHBox);
+        directorsVBox.setPadding(new Insets(-5));
+
+        // GridPane containing left and right sections
+        GridPane mainGrid = new GridPane();
+        mainGrid.add(rightSideLeftVBox, 0, 0);
+        mainGrid.add(directorsVBox, 1, 0);
+        mainGrid.setHgap(110);
+
+        // Create The Doc Info section
+        Label lengthLabel = new Label("Length");
+        TextField lengthTextField = new TextField();
+        lengthTextField.setPrefWidth(80);
+
+        Label releaseDateLabel = new Label("Release Date");
+        DatePicker releaseDateField = new DatePicker();
+        releaseDateField.setPrefWidth(120);
+
+        HBox firstHBox = new HBox(10, lengthLabel, lengthTextField, releaseDateLabel, releaseDateField);
+        firstHBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Second HBox
+        Label descriptionLabel = new Label("Description");
+        TextField descriptionTextField = new TextField();
+        descriptionTextField.setMaxWidth(Double.MAX_VALUE);
+
+        HBox secondHBox = new HBox(10, descriptionLabel, descriptionTextField);
+        secondHBox.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(descriptionTextField, Priority.ALWAYS);
+
+        // Main VBox
+        VBox additionalDocInfo = new VBox(10, firstHBox, secondHBox);
+        additionalDocInfo.setPadding(new Insets(50, 0, 0 ,0));
+
+        // Copies
+        Label copiesLabel = new Label("Copies");
+        ComboBox<String> copiesDropdown = new ComboBox<>();
+        copiesDropdown.getItems().addAll("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
+        copiesDropdown.setValue("3");
+        VBox copies = new VBox(10, copiesLabel, copiesDropdown);
+
+        // Combine copies, borrowed/overdue, and waitlisted into hbox
+        HBox detailedDocInfo = new HBox(20, copies);
+        detailedDocInfo.setPadding(new Insets(50, 0, 0 ,0));
+
+        // Update/Delete Buttons
+        Button addNewItemButton = new Button("Add New Item");
+        addNewItemButton.setPrefWidth(150);
+        addNewItemButton.setPrefHeight(80);
+
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setPrefWidth(70);
+        cancelButton.setPrefHeight(80);
+
+        HBox updateDelBox = new HBox(10, addNewItemButton, cancelButton);
+        updateDelBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // Main VBox containing the title and the main HBox
+        VBox mainRightContent = new VBox(10, newDocTitleBox, mainGrid, additionalDocInfo, detailedDocInfo, updateDelBox);
+        return mainRightContent;
     }
 
     public static class InventoryItem {
