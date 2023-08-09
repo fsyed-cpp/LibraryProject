@@ -20,10 +20,63 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Date;
 
+/*
+loans.csv:
+    loanID
+    itemID
+    broncoID
+    loan date
+    due date
+
+students.csv:
+    broncoID
+    first name
+    last name
+    major
+
+authors.csv:
+    first and last name
+    nationality
+    subject
+
+authorgroups.csv:
+    itemID
+    author first and last name
+
+directors.csv:
+    first and last name
+    nationality
+    style
+
+items.csv:
+    itemID
+    title
+    location
+    daily price
+    borrowed copies
+    available copies
+    overdue copies
+
+    authorgroup = itemID
+    page count
+    publishing date
+
+    director
+    film length
+    release date
+*/
+
 public class LibraryApplication extends Application {
 
     private Boolean isLoanDetailAdded = false;
     private Boolean isComprehensiveLoanDetailAdded = false;
+
+    private CSVController loanController = new CSVController("data/loans.csv");
+    private CSVController itemController = new CSVController("data/items.csv");
+    private CSVController studentController = new CSVController("data/students.csv");
+    private CSVController authorController = new CSVController("data/authors.csv");
+    private CSVController authorgroupController = new CSVController("data/authorgroups.csv");
+    private CSVController directorController = new CSVController("data/directors.csv");
 
     @Override
     public void start(Stage primaryStage) {
