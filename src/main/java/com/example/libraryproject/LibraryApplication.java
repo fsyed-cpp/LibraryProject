@@ -521,19 +521,19 @@ public class LibraryApplication extends Application {
 
         // Daily Price field
         Label dailyPriceLabel = new Label(GetDailyPriceOfItem(selectedLoan.getItemID()));
-        rightFieldsGrid.addRow(0, new Label("Due Date"), dailyPriceLabel);
+        rightFieldsGrid.addRow(0, new Label("Price"), dailyPriceLabel);
 
         // Accrued field
         Label accruedField = new Label(CalculateAccruedPrice(dailyPriceLabel.getText(), selectedLoan.getloanDate()));
         rightFieldsGrid.addRow(1, new Label("Accrued"), accruedField);
 
         // Fines field
-        TextField finesField = new TextField();
-        rightFieldsGrid.addRow(2, new Label("Fines"), finesField);
+        Label finesLabel = new Label(CalculateNumberOfFines(selectedLoan.getDueDate()));
+        rightFieldsGrid.addRow(2, new Label("Fines"), finesLabel);
 
         // Total Due field
-        TextField totalDueField = new TextField();
-        rightFieldsGrid.addRow(3, new Label("Total Due"), totalDueField);
+        Label totalDueLabel = new Label(CalculateTotalPrice(accruedField.getText(), dailyPriceLabel.getText(), finesLabel.getText()));
+        rightFieldsGrid.addRow(3, new Label("Total Due"), totalDueLabel);
 
         VBox rightSideRightVBox = new VBox(rightFieldsGrid);
 
@@ -586,10 +586,24 @@ public class LibraryApplication extends Application {
         return mainRightContent;
     }
 
+    private String CalculateNumberOfFines(LocalDate dueDate) {
+        if (dueDate.isBefore(ChronoLocalDate.from(LocalDate.now().atStartOfDay())))
+            return "0";
+        else
+            return String.valueOf(dueDate.compareTo(ChronoLocalDate.from(LocalDate.now().atStartOfDay())));
+    }
+
     private String CalculateAccruedPrice(String text, LocalDate value) {
         float actPrice = Float.parseFloat(text);
         int daysSince = -1 * value.compareTo(ChronoLocalDate.from(LocalDate.now().atStartOfDay()));
         return String.valueOf(actPrice * daysSince);
+    }
+
+    private String CalculateTotalPrice(String accrued, String daily, String fineCount) {
+        float accPrice = Float.parseFloat(accrued);
+        float dailPrice = Float.parseFloat(daily);
+        int fineCountInt = Integer.parseInt(fineCount);
+        return String.valueOf(dailPrice * 1.1 * fineCountInt + accPrice);
     }
 
     private String GetDailyPriceOfItem(String itemID) {
