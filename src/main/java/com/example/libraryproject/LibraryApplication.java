@@ -231,6 +231,7 @@ public class LibraryApplication extends Application {
 
         // Generate Reports Button
         Button generateReportsButton = new Button("Generate Financial Report");
+
         HBox reportButtonBox = new HBox(generateReportsButton);
         reportButtonBox.setAlignment(Pos.CENTER_RIGHT);
         reportButtonBox.setPrefWidth(200);
@@ -271,30 +272,13 @@ public class LibraryApplication extends Application {
 
         // TODO: Comprehensive button functionality:
         comprehensiveSearchButton.setOnAction(event -> {
-            String searchText = searchBar.getText();
-            boolean found = false;
-            String line;
-
-            try (BufferedReader br = new BufferedReader(new FileReader("path/to/loans.csv"))) {
-                while ((line = br.readLine()) != null) {
-                    // Split the line by comma and check if it contains the search text
-                    String[] values = line.split(",");
-                    for (String value : values) {
-                        if (value.equals(searchText)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found) break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            LoanItem found = null;
+            switch (searchFilterDropDown.getValue()) {
+                case "Bronco ID":
+                    found = searchSingleBroncoIDInLoans(comprehensiveSearchBar.getText());
             }
 
-            //TODO: TESTING !!!! REMOVE WHEN WE ADD CSV DATA FOR LOANS !!
-            found = true;
-
-            if (!found) {
+            if (found == null) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Alert");
                 alert.setHeaderText("Bronco ID not found in database");
@@ -302,6 +286,7 @@ public class LibraryApplication extends Application {
                 alert.showAndWait();
             } else {
                 // Show loan content for the comprehensive tab
+                loansForID = getAllLoansForBroncoID(comprehensiveSearchBar.getText());
                 VBox comprehensiveLoansDetailContent = createComprehensiveLoanDetailContent();
                 if (!isComprehensiveLoanDetailAdded) {
                     comprehensiveMainContent.getChildren().add(comprehensiveLoansDetailContent);
@@ -309,6 +294,14 @@ public class LibraryApplication extends Application {
                     tabPane.getTabs().addAll(comprehensiveTab);
                     isComprehensiveLoanDetailAdded = true;
                 }
+            }
+        });
+
+        generateReportsButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                String[] report = CalculateAllLoansInList(loansForID);
+                new Alert(Alert.AlertType.INFORMATION, String.format("Number of Loans: %s\nTotal Income from Loans: %s\nTotal Income from Fines: %s\nTotal Income: %s", report[0], report[1], report[2], report[3])).showAndWait();
             }
         });
 
@@ -322,7 +315,6 @@ public class LibraryApplication extends Application {
     }
 
     private LoanItem searchSingleBroncoIDInLoans(String text) {
-        ArrayList<LoanItem> foundLoans = new ArrayList<LoanItem>();
         for (LoanItem loan : loans) {
             if (loan.getBroncoID().equals(text))
                 return loan;
@@ -345,9 +337,6 @@ public class LibraryApplication extends Application {
                 broncoLoans.add(loan);
         return broncoLoans;
     }
-
-
-
 
     private VBox createLoanDetailContent() {
         // Left Side
@@ -479,7 +468,7 @@ public class LibraryApplication extends Application {
         dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
         // data
-        ObservableList<LoanItem> data = FXCollections.observableArrayList(loans);
+        ObservableList<LoanItem> data = FXCollections.observableArrayList(loansForID);
 
 
         // Setting data to the table
@@ -514,9 +503,6 @@ public class LibraryApplication extends Application {
         leftVBox.setPrefWidth(150);
 
         leftSide.getChildren().setAll(loanTitleBox, table, leftVBox);
-
-        // RIGHT SIDE !!
-        rightSide.getChildren().setAll(createLoanInformationContent(new LoanItem()));
 
         // Main content layout (with equal widths for left and right sides)
         HBox mainContent = new HBox(leftSide, rightSide);
@@ -700,6 +686,26 @@ public class LibraryApplication extends Application {
         float dailPrice = Float.parseFloat(daily);
         int fineCountInt = Integer.parseInt(fineCount);
         return String.valueOf(dailPrice * 1.1 * fineCountInt + accPrice);
+    }
+
+    private String[] CalculateAllLoansInList(ArrayList<LoanItem> loanSet) {
+        float totalIncome = 0.0F;
+        int loanCount = 0;
+        float loanIncome = 0.0F;
+        float fineIncome = 0.0F;
+
+        for (LoanItem loan : loanSet) {
+            loanCount++;
+            loanIncome += Float.parseFloat(
+                    CalculateAccruedPrice(
+                            GetDailyPriceOfItem(loan.getItemID()),loan.getloanDate()
+                    )
+            );
+            fineIncome += 1.1 * Float.parseFloat(GetDailyPriceOfItem(loan.getItemID())) * Integer.parseInt(CalculateNumberOfFines(loan.getDueDate()));
+            totalIncome += fineIncome + loanIncome;
+        }
+
+        return new String[]{String.valueOf(loanCount), String.valueOf(loanIncome), String.valueOf(fineIncome), String.valueOf(totalIncome)};
     }
 
     private String GetDailyPriceOfItem(String itemID) {
