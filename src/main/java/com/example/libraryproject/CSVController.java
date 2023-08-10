@@ -18,7 +18,7 @@ public class CSVController {
         }
     }
     public CSVController() {
-        super();
+        this("newcsv.csv");
     }
     public ArrayList<String[]> getCsvData() {
         return csvData;
@@ -30,10 +30,15 @@ public class CSVController {
     public void UpdateCSV() {
         try {
             FileWriter fw = new FileWriter(fileString);
-            for (String[] lines : csvData.toArray(new String[0][0]))
-                for (String line : lines)
-                    fw.write(line);
+            for (String[] lines : csvData.toArray(new String[0][0])) {
+                for (int i = 0; i < lines.length; i++) {
+                    fw.write(lines[i]);
+                    if (i < lines.length - 1) {
+                        fw.write(",");
+                    }
+                }
                 fw.write("\n");
+            }
             fw.close();
         } catch (IOException e) {
             e.printStackTrace();

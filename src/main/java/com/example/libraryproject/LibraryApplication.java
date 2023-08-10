@@ -25,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 /*
@@ -80,14 +81,50 @@ public class LibraryApplication extends Application {
 
     private CSVController loanController = new CSVController("data/loans.csv");
     ArrayList<LoanItem> loans;
+
+    public void saveLoansToCSV() {
+        ArrayList<String[]> newData = new ArrayList<>();
+        for (LoanItem loan : loans)
+            newData.add(loan.getAsStringArr());
+        loanController.setCsvData(newData);
+        loanController.UpdateCSV();
+    }
     private CSVController itemController = new CSVController("data/items.csv");
     ArrayList<InventoryItem> items;
+    public void saveItemsToCSV() {
+        ArrayList<String[]> newData = new ArrayList<>();
+        for (InventoryItem item : items)
+            newData.add(item.getAsStringArr());
+        itemController.setCsvData(newData);
+        itemController.UpdateCSV();
+    }
     private CSVController studentController = new CSVController("data/students.csv");
     ArrayList<StudentItem> students;
+    public void saveStudentsToCSV() {
+        ArrayList<String[]> newData = new ArrayList<>();
+        for (StudentItem student : students)
+            newData.add(student.getAsStringArr());
+        studentController.setCsvData(newData);
+        studentController.UpdateCSV();
+    }
     private CSVController authorController = new CSVController("data/authors.csv");
     ArrayList<AuthorItem> authors;
+    public void saveAuthorsToCSV() {
+        ArrayList<String[]> newData = new ArrayList<>();
+        for (AuthorItem author : authors)
+            newData.add(author.getAsStringArr());
+        authorController.setCsvData(newData);
+        authorController.UpdateCSV();
+    }
     private CSVController directorController = new CSVController("data/directors.csv");
     ArrayList<DirectorItem> directors;
+    public void saveDirectorsToCSV() {
+        ArrayList<String[]> newData = new ArrayList<>();
+        for (DirectorItem director : directors)
+            newData.add(director.getAsStringArr());
+        directorController.setCsvData(newData);
+        directorController.UpdateCSV();
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -168,6 +205,8 @@ public class LibraryApplication extends Application {
         launch(args);
     }
 
+
+    public ArrayList<LoanItem> loansForID;
     private VBox createLoansContent() {
 
         // Tabs for Standard and Comprehensive
@@ -219,7 +258,8 @@ public class LibraryApplication extends Application {
                 alert.showAndWait();
             } else {
                 // Show loan content for the standard tab
-                VBox loanDetailContent = createLoanDetailContent(getAllLoansForBroncoID(searchBar.getText()));
+                loansForID = getAllLoansForBroncoID(searchBar.getText());
+                VBox loanDetailContent = createLoanDetailContent();
                 if (!isLoanDetailAdded) {
                     standardMainContent.getChildren().add(loanDetailContent);
                     standardTab.setContent(standardMainContent);
@@ -307,7 +347,9 @@ public class LibraryApplication extends Application {
     }
 
 
-    private VBox createLoanDetailContent(ArrayList<LoanItem> loansForID) {
+
+
+    private VBox createLoanDetailContent() {
         // Left Side
         VBox leftSide = new VBox();
         leftSide.setPadding(new Insets(10));
@@ -370,6 +412,7 @@ public class LibraryApplication extends Application {
             table.getSelectionModel().clearSelection();
             LoanItem newLoan = new LoanItem(loansForID.get(0).getBroncoID());
             loans.add(newLoan);
+            saveLoansToCSV();
             loansForID.add(newLoan);
             table.getItems().add(newLoan);
             table.getSelectionModel().select(newLoan);
@@ -503,14 +546,9 @@ public class LibraryApplication extends Application {
         TextField codeField = new TextField(selectedLoan.getItemID());
         fieldsGrid.addRow(0, new Label("Code"), codeField);
 
-
-
         // Item Title label
         Label titleField = new Label(GetTitleFromItemID(selectedLoan.getItemID()));
         fieldsGrid.addRow(1, new Label("Title"), titleField);
-
-
-
 
         // Requested Days with dropdown
         Label reqDaysDropdown = new Label(String.valueOf(-1 * selectedLoan.getloanDate().compareTo(selectedLoan.getDueDate())));
@@ -556,18 +594,6 @@ public class LibraryApplication extends Application {
             totalDueLabel.setText(CalculateTotalPrice(accruedLabel.getText(), dailyPriceLabel.getText(), finesLabel.getText()));
         });
 
-        EventHandler<ActionEvent> dateChanged = new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                reqDaysDropdown.setText(String.valueOf(-1 * loanDateField.getValue().compareTo(dueDateField.getValue())));
-                accruedLabel.setText(CalculateAccruedPrice(dailyPriceLabel.getText(), loanDateField.getValue()));
-                finesLabel.setText(CalculateNumberOfFines(dueDateField.getValue()));
-                totalDueLabel.setText(CalculateTotalPrice(accruedLabel.getText(), dailyPriceLabel.getText(), finesLabel.getText()));
-            }
-        };
-        loanDateField.setOnAction(dateChanged);
-        dueDateField.setOnAction(dateChanged);
-
         VBox rightSideRightVBox = new VBox(rightFieldsGrid);
 
         // GridPane containing left and right sections
@@ -599,14 +625,52 @@ public class LibraryApplication extends Application {
         HBox waitlistedOverdueBox = new HBox(20, overdueBox);
         waitlistedOverdueBox.setPadding(new Insets(20, 0, 0 ,0));
 
+        EventHandler<ActionEvent> dateChanged = actionEvent -> {
+            reqDaysDropdown.setText(String.valueOf(-1 * loanDateField.getValue().compareTo(dueDateField.getValue())));
+            accruedLabel.setText(CalculateAccruedPrice(dailyPriceLabel.getText(), loanDateField.getValue()));
+            finesLabel.setText(CalculateNumberOfFines(dueDateField.getValue()));
+            totalDueLabel.setText(CalculateTotalPrice(accruedLabel.getText(), dailyPriceLabel.getText(), finesLabel.getText()));
+            if (dueDateField.getValue().isBefore(ChronoLocalDate.from(LocalDate.now().atStartOfDay().plusDays(1))))
+                overdueLabel.setText("Overdue? Yes");
+            else
+                overdueLabel.setText("Overdue? No");
+        };
+        loanDateField.setOnAction(dateChanged);
+        dueDateField.setOnAction(dateChanged);
+
         // Update/Delete Buttons
-        Button returnItemButton = new Button("Return Item");
+        Button returnItemButton = new Button("Save Loan");
         returnItemButton.setPrefWidth(150);
         returnItemButton.setPrefHeight(80);
+
+        returnItemButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if (new Alert(Alert.AlertType.CONFIRMATION, "Are you sure to want to update?").showAndWait().get() != ButtonType.OK)
+                    return;
+
+                selectedLoan.setItemID(codeField.getText());
+                selectedLoan.setLoanDate(loanDateField.getValue());
+                selectedLoan.setDueDate(dueDateField.getValue());
+                saveLoansToCSV();
+            }
+        });
 
         Button deleteButton = new Button("Delete Loan");
         deleteButton.setPrefWidth(150);
         deleteButton.setPrefHeight(50);
+
+        deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if (new Alert(Alert.AlertType.CONFIRMATION, "Are you sure to want to delete?").showAndWait().get() != ButtonType.OK)
+                    return;
+
+                loans.remove(selectedLoan);
+                loansForID.remove(selectedLoan);
+                saveLoansToCSV();
+            }
+        });
 
         VBox updateDelBox = new VBox(10, returnItemButton, deleteButton);
         updateDelBox.setAlignment(Pos.BOTTOM_RIGHT);
@@ -619,10 +683,10 @@ public class LibraryApplication extends Application {
     }
 
     private String CalculateNumberOfFines(LocalDate dueDate) {
-        if (dueDate.isBefore(ChronoLocalDate.from(LocalDate.now().atStartOfDay())))
+        if (dueDate.isAfter(ChronoLocalDate.from(LocalDate.now().atStartOfDay())))
             return "0";
         else
-            return String.valueOf(dueDate.compareTo(ChronoLocalDate.from(LocalDate.now().atStartOfDay())));
+            return String.valueOf(-1 * dueDate.compareTo(ChronoLocalDate.from(LocalDate.now().atStartOfDay())));
     }
 
     private String CalculateAccruedPrice(String text, LocalDate value) {
@@ -1873,9 +1937,29 @@ public class LibraryApplication extends Application {
         private final SimpleStringProperty loan;
         private final SimpleStringProperty itemID;
         private final SimpleStringProperty broncoID;
-        private final LocalDate loanDate;
+        private LocalDate loanDate;
 
-        private final LocalDate dueDate;
+        public void setLoan(String loan) {
+            this.loan.set(loan);
+        }
+
+        public void setItemID(String itemID) {
+            this.itemID.set(itemID);
+        }
+
+        public void setBroncoID(String broncoID) {
+            this.broncoID.set(broncoID);
+        }
+
+        public void setLoanDate(LocalDate date) {
+            this.loanDate = date;
+        }
+
+        public void setDueDate(LocalDate date) {
+            this.dueDate = date;
+        }
+
+        private LocalDate dueDate;
 
         public LoanItem(String loan, String itemID, String broncoID, String loanDate, String dueDate) {
             this.loan = new SimpleStringProperty(loan);
@@ -1915,7 +1999,7 @@ public class LibraryApplication extends Application {
         }
 
         public String[] getAsStringArr() {
-            return new String[]{loan.get(), itemID.get(), broncoID.get(), loanDate.toString(), dueDate.toString()};
+            return new String[]{this.getLoan(), this.getItemID(), this.getBroncoID(), this.getloanDate().toString(), this.getDueDate().toString()};
         }
     }
 }
