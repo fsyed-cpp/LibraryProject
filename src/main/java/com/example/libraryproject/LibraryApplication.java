@@ -25,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 /*
 loans.csv:
@@ -306,7 +307,7 @@ public class LibraryApplication extends Application {
     }
 
 
-    private VBox createLoanDetailContent(ArrayList<LoanItem> loans) {
+    private VBox createLoanDetailContent(ArrayList<LoanItem> loansForID) {
         // Left Side
         VBox leftSide = new VBox();
         leftSide.setPadding(new Insets(10));
@@ -323,7 +324,7 @@ public class LibraryApplication extends Application {
         rightSide.setVisible(false);
 
         // Title "<Person Name?"
-        Label titleLabel = new Label(getNameFromBroncoID(loans.get(0).getBroncoID()));
+        Label titleLabel = new Label(getNameFromBroncoID(loansForID.get(0).getBroncoID()));
         HBox loanTitleBox = new HBox((titleLabel));
         loanTitleBox.setAlignment(Pos.CENTER);
         titleLabel.setAlignment(Pos.CENTER);
@@ -343,7 +344,7 @@ public class LibraryApplication extends Application {
         dueDateColumn.prefWidthProperty().bind(table.widthProperty().divide(2));
 
         // data
-        ObservableList<LoanItem> data = FXCollections.observableArrayList(loans);
+        ObservableList<LoanItem> data = FXCollections.observableArrayList(loansForID);
 
         // Setting data to the table
         table.setItems(data);
@@ -367,8 +368,13 @@ public class LibraryApplication extends Application {
 
         addNewLoanButton.setOnAction(event -> {
             table.getSelectionModel().clearSelection();
+            LoanItem newLoan = new LoanItem(loansForID.get(0).getBroncoID());
+            loans.add(newLoan);
+            loansForID.add(newLoan);
+            table.getItems().add(newLoan);
+            table.getSelectionModel().select(newLoan);
             rightSide.getChildren().clear();
-            rightSide.getChildren().setAll(createLoanInformationContent(new LoanItem(loans.get(0).getBroncoID())));
+            rightSide.getChildren().setAll(createLoanInformationContent(newLoan));
         });
 
         VBox buttonBox = new VBox(5, addNewLoanButton);
@@ -493,13 +499,18 @@ public class LibraryApplication extends Application {
         fieldsGrid.setHgap(5);
         fieldsGrid.setVgap(10);
 
-        // Code field
-        TextField codeField = new TextField(selectedLoan.getLoan());
+        // ITEM Code field
+        TextField codeField = new TextField(selectedLoan.getItemID());
         fieldsGrid.addRow(0, new Label("Code"), codeField);
 
-        // Title field
-        TextField titleField = new TextField(GetTitleFromItemID(selectedLoan.getItemID()));
+
+
+        // Item Title label
+        Label titleField = new Label(GetTitleFromItemID(selectedLoan.getItemID()));
         fieldsGrid.addRow(1, new Label("Title"), titleField);
+
+
+
 
         // Requested Days with dropdown
         Label reqDaysDropdown = new Label(String.valueOf(-1 * selectedLoan.getloanDate().compareTo(selectedLoan.getDueDate())));
@@ -537,6 +548,26 @@ public class LibraryApplication extends Application {
         Label totalDueLabel = new Label(CalculateTotalPrice(accruedLabel.getText(), dailyPriceLabel.getText(), finesLabel.getText()));
         rightFieldsGrid.addRow(3, new Label("Total Due"), totalDueLabel);
 
+        codeField.setOnAction(actionEvent -> {
+            titleField.setText(GetTitleFromItemID(codeField.getText()));
+            dailyPriceLabel.setText(GetDailyPriceOfItem(codeField.getText()));
+            accruedLabel.setText(CalculateAccruedPrice(dailyPriceLabel.getText(), selectedLoan.getloanDate()));
+            finesLabel.setText(CalculateNumberOfFines(selectedLoan.getDueDate()));
+            totalDueLabel.setText(CalculateTotalPrice(accruedLabel.getText(), dailyPriceLabel.getText(), finesLabel.getText()));
+        });
+
+        EventHandler<ActionEvent> dateChanged = new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                reqDaysDropdown.setText(String.valueOf(-1 * loanDateField.getValue().compareTo(dueDateField.getValue())));
+                accruedLabel.setText(CalculateAccruedPrice(dailyPriceLabel.getText(), loanDateField.getValue()));
+                finesLabel.setText(CalculateNumberOfFines(dueDateField.getValue()));
+                totalDueLabel.setText(CalculateTotalPrice(accruedLabel.getText(), dailyPriceLabel.getText(), finesLabel.getText()));
+            }
+        };
+        loanDateField.setOnAction(dateChanged);
+        dueDateField.setOnAction(dateChanged);
+
         VBox rightSideRightVBox = new VBox(rightFieldsGrid);
 
         // GridPane containing left and right sections
@@ -558,7 +589,7 @@ public class LibraryApplication extends Application {
         // Overdue
         Label overdueLabel = new Label();
 
-        if (selectedLoan.getDueDate().isAfter(ChronoLocalDate.from(LocalDate.now().atStartOfDay())))
+        if (selectedLoan.getDueDate().isBefore(ChronoLocalDate.from(LocalDate.now().atStartOfDay().plusDays(1))))
             overdueLabel.setText("Overdue? Yes");
         else
             overdueLabel.setText("Overdue? No");
@@ -1856,11 +1887,11 @@ public class LibraryApplication extends Application {
         }
 
         public LoanItem(String broncoID) {
-            this("<new, replace me>", "0", broncoID, "2023-08-09", "2023-08-19");
+            this(ThreadLocalRandom.current().nextInt(1, 10000) + "L", "0", broncoID, "2023-08-09", "2023-08-19");
         }
 
         public LoanItem() {
-            this("<new, replace me>", "0", "", "2023-08-09", "2023-08-19");
+            this(ThreadLocalRandom.current().nextInt(1, 10000) + "L", "0", "", "2023-08-09", "2023-08-19");
         }
 
         public String getLoan() {
