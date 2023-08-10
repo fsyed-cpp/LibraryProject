@@ -301,7 +301,9 @@ public class LibraryApplication extends Application {
             @Override
             public void handle(ActionEvent actionEvent) {
                 String[] report = CalculateAllLoansInList(loansForID);
-                new Alert(Alert.AlertType.INFORMATION, String.format("Number of Loans: %s\nTotal Income from Loans: %s\nTotal Income from Fines: %s\nTotal Income: %s", report[0], report[1], report[2], report[3])).showAndWait();
+                Alert reportAlert =  new Alert(Alert.AlertType.INFORMATION, String.format("Number of Loans: %s\nTotal Income from Loans: %s\nTotal Income from Fines: %s\nTotal Income: %s", report[0], report[1], report[2], report[3]));
+                reportAlert.setTitle("Financial Report for " + loansForID.get(0).getBroncoID());
+                reportAlert.showAndWait();
             }
         });
 
